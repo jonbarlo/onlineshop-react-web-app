@@ -1,0 +1,44 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from '@/components/layout/Layout';
+import { ProductList } from '@/pages/ProductList';
+import { ProductDetail } from '@/pages/ProductDetail';
+import { Cart } from '@/pages/Cart';
+import { AdminLogin } from '@/pages/AdminLogin';
+import { AdminDashboard } from '@/pages/AdminDashboard';
+import { AdminOrders } from '@/pages/AdminOrders';
+import { AdminProducts } from '@/pages/AdminProducts';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+
+function App() {
+  console.log('App component rendered');
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Layout />}>
+        <Route index element={<ProductList />} />
+        <Route path="products/:id" element={<ProductDetail />} />
+        <Route path="cart" element={<Cart />} />
+      </Route>
+
+      {/* Admin Routes */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="products" element={<AdminProducts />} />
+      </Route>
+
+      {/* Catch all route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export default App;
