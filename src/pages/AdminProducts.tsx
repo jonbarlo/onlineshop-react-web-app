@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { apiService } from '@/services/api';
@@ -11,14 +11,12 @@ import { Alert } from '@/components/ui/Alert';
 
 export const AdminProducts: React.FC = () => {
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
 
   const { data, isLoading, error } = useQuery(
-    ['admin-products', page, search],
+    ['admin-products', search],
     () => apiService.getAdminProducts({
-      page,
-      limit: 12,
       search: search || undefined,
     }),
     {
@@ -26,8 +24,26 @@ export const AdminProducts: React.FC = () => {
     }
   );
 
-  const products = data?.data?.items || [];
-  const pagination = data?.data?.pagination;
+  const products = data?.data || [];
+
+  const deleteProductMutation = useMutation(
+    (productId: number) => apiService.deleteProduct(productId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin-products']);
+      },
+    }
+  );
+
+  const handleDeleteProduct = async (productId: number, productName: string) => {
+    if (confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+      try {
+        await deleteProductMutation.mutateAsync(productId);
+      } catch (error) {
+        alert('Failed to delete product. Please try again.');
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -120,12 +136,9 @@ export const AdminProducts: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this product?')) {
-                      // Handle delete
-                    }
-                  }}
+                  onClick={() => handleDeleteProduct(product.id, product.name)}
                   className="text-error-600 hover:text-error-700"
+                  disabled={deleteProductMutation.isLoading}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -143,26 +156,6 @@ export const AdminProducts: React.FC = () => {
         </Card>
       )}
 
-      {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex justify-center">
-          <div className="flex space-x-2">
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  pageNum === page
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-secondary-700 hover:bg-secondary-50 border'
-                }`}
-              >
-                {pageNum}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

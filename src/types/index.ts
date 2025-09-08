@@ -31,6 +31,13 @@ export interface AdminOrdersApiResponse {
   timestamp: string;
 }
 
+export interface ProductsApiResponse {
+  success: boolean;
+  message: string;
+  data: Product[];
+  timestamp: string;
+}
+
 // User Types
 export interface User {
   id: number;
@@ -67,6 +74,7 @@ export interface UpdateProductRequest {
   description?: string;
   price?: number;
   imageUrl?: string;
+  isActive?: boolean;
 }
 
 // Order Types

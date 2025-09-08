@@ -9,6 +9,8 @@ import { AdminProducts } from '@/pages/AdminProducts';
 import { OrdersList } from '@/pages/OrdersList';
 import { OrderDetail } from '@/pages/OrderDetail';
 import { OrderEdit } from '@/pages/OrderEdit';
+import { ProductCreate } from '@/pages/ProductCreate';
+import { ProductEdit } from '@/pages/ProductEdit';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 function App() {
@@ -37,6 +39,8 @@ function App() {
         <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="orders/:id/edit" element={<OrderEdit />} />
         <Route path="products" element={<AdminProducts />} />
+        <Route path="products/new" element={<ProductCreate />} />
+        <Route path="products/:id/edit" element={<ProductEdit />} />
       </Route>
 
       {/* Catch all route */}

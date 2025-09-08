@@ -13,6 +13,7 @@ import {
   OrderQueryParams,
   PaginatedResponse,
   AdminOrdersApiResponse,
+  ProductsApiResponse,
 } from '@/types';
 
 class ApiService {
@@ -96,8 +97,8 @@ class ApiService {
   }
 
   // Admin Products
-  async getAdminProducts(params: ProductQueryParams = {}): Promise<ApiResponse<PaginatedResponse<Product>>> {
-    const response = await this.api.get('/api/admin/products', { params });
+  async getAdminProducts(params: ProductQueryParams = {}): Promise<ProductsApiResponse> {
+    const response = await this.api.get('/api/products', { params });
     return response.data;
   }
 
