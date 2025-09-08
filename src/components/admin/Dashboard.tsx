@@ -1,11 +1,15 @@
 import React from 'react';
 import { useQuery } from 'react-query';
+import { Link } from 'react-router-dom';
 import { 
   ShoppingCart, 
   DollarSign, 
   Clock,
   CheckCircle,
-  Truck
+  Truck,
+  Eye,
+  Edit,
+  Plus
 } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -139,6 +143,50 @@ export const Dashboard: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link to="/admin/orders">
+              <div className="p-4 border rounded-lg hover:bg-secondary-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <Eye className="h-8 w-8 text-primary-600" />
+                  <div>
+                    <h3 className="font-medium text-secondary-900">View All Orders</h3>
+                    <p className="text-sm text-secondary-500">Manage and track orders</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <Link to="/admin/orders/new">
+              <div className="p-4 border rounded-lg hover:bg-secondary-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <Plus className="h-8 w-8 text-success-600" />
+                  <div>
+                    <h3 className="font-medium text-secondary-900">Create Order</h3>
+                    <p className="text-sm text-secondary-500">Add a new order manually</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <Link to="/admin/products">
+              <div className="p-4 border rounded-lg hover:bg-secondary-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <Edit className="h-8 w-8 text-warning-600" />
+                  <div>
+                    <h3 className="font-medium text-secondary-900">Manage Products</h3>
+                    <p className="text-sm text-secondary-500">Edit product catalog</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Recent Orders */}
       <Card>
         <CardHeader>
@@ -148,10 +196,12 @@ export const Dashboard: React.FC = () => {
           {recentOrders.length > 0 ? (
             <div className="space-y-4">
               {recentOrders.map((order) => (
-                <div
+                <Link
                   key={order.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  to={`/admin/orders/${order.id}`}
+                  className="block"
                 >
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-secondary-50 transition-colors">
                   <div>
                     <p className="font-medium text-secondary-900">
                       {order.orderNumber}
@@ -176,7 +226,8 @@ export const Dashboard: React.FC = () => {
                       {order.status.replace('_', ' ')}
                     </span>
                   </div>
-                </div>
+                  </div>
+                </Link>
               ))}
             </div>
           ) : (

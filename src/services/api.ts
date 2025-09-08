@@ -115,6 +115,17 @@ class ApiService {
     return response.data;
   }
 
+  // Orders (Public)
+  async getOrders(params: OrderQueryParams = {}): Promise<ApiResponse<PaginatedResponse<Order>>> {
+    const response = await this.api.get('/api/orders', { params });
+    return response.data;
+  }
+
+  async getOrder(id: number): Promise<ApiResponse<Order>> {
+    const response = await this.api.get(`/api/orders/${id}`);
+    return response.data;
+  }
+
   // Admin Orders
   async getAdminOrders(params: OrderQueryParams = {}): Promise<ApiResponse<PaginatedResponse<Order>>> {
     const response = await this.api.get('/api/admin/orders', { params });

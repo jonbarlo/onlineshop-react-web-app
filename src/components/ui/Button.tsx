@@ -18,6 +18,7 @@ export const Button: React.FC<ButtonProps> = ({
     secondary: 'btn-secondary',
     outline: 'btn-outline',
     ghost: 'btn-ghost',
+    default: 'btn-primary',
   };
   const sizeClasses = {
     sm: 'btn-sm',

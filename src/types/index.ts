@@ -165,7 +165,7 @@ export interface AuthState {
 
 // Component Props Types
 export interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'default';
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
