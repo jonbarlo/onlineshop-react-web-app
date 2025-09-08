@@ -35,8 +35,8 @@ export const OrderList: React.FC = () => {
     }
   );
 
-  const orders = data?.data?.items || [];
-  const pagination = data?.data?.pagination;
+  const orders = data?.data || [];
+  const pagination = data?.pagination;
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -147,7 +147,7 @@ export const OrderList: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-secondary-200">
-                  {orders.map((order) => (
+                  {orders.map((order: any) => (
                     <tr key={order.id} className="hover:bg-secondary-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-secondary-900">

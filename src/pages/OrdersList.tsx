@@ -38,7 +38,7 @@ export const OrdersList: React.FC = () => {
 
   const { data, isLoading, error, refetch } = useQuery(
     ['orders', currentPage, pageSize, searchTerm, statusFilter],
-    () => apiService.getOrders({
+    () => apiService.getAdminOrders({
       page: currentPage,
       limit: pageSize,
       search: searchTerm || undefined,
@@ -49,8 +49,11 @@ export const OrdersList: React.FC = () => {
     }
   );
 
-  const orders = data?.data?.items || [];
-  const pagination = data?.data?.pagination;
+  const orders = data?.data || [];
+  const pagination = data?.pagination;
+  
+  console.log('OrdersList - orders:', orders);
+  console.log('OrdersList - first order:', orders[0]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,7 +206,7 @@ export const OrdersList: React.FC = () => {
                             #{order.orderNumber}
                           </div>
                           <div className="text-sm text-secondary-500">
-                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                            {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </td>

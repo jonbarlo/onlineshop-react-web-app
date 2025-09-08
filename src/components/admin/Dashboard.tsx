@@ -54,8 +54,8 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  // Extract the actual statistics from the nested structure
-  const statistics = stats.statistics || {};
+  // The API returns the stats directly, not nested under 'statistics'
+  const statistics = stats || {};
   const recentOrders = stats.recentOrders || [];
   
   console.log('Statistics object:', statistics);

@@ -28,7 +28,7 @@ export const OrderEdit: React.FC = () => {
 
   const { data, isLoading, error } = useQuery(
     ['order', id],
-    () => apiService.getOrder(Number(id)),
+    () => apiService.getAdminOrder(Number(id)),
     {
       enabled: !!id,
     }

@@ -18,6 +18,19 @@ export interface PaginatedResponse<T> {
   pagination: PaginationMeta;
 }
 
+export interface AdminOrdersResponse {
+  orders: Order[];
+  pagination: PaginationMeta;
+}
+
+export interface AdminOrdersApiResponse {
+  success: boolean;
+  message: string;
+  data: Order[];
+  pagination: PaginationMeta;
+  timestamp: string;
+}
+
 // User Types
 export interface User {
   id: number;
@@ -102,13 +115,11 @@ export interface UpdateOrderStatusRequest {
 
 // Dashboard Types
 export interface DashboardStats {
-  statistics: {
-    totalOrders: number;
-    newOrders: number;
-    paidOrders: number;
-    readyForDeliveryOrders: number;
-    totalRevenue: number;
-  };
+  totalOrders: number;
+  newOrders: number;
+  paidOrders: number;
+  readyForDeliveryOrders: number;
+  totalRevenue: number;
   recentOrders: Order[];
 }
 
