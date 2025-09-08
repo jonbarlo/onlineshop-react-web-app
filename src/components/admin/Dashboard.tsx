@@ -39,6 +39,9 @@ export const Dashboard: React.FC = () => {
 
   const stats = data?.data;
 
+  console.log('Dashboard data:', data);
+  console.log('Dashboard stats:', stats);
+
   if (!stats) {
     return (
       <Alert type="error" title="No data available">
@@ -47,31 +50,38 @@ export const Dashboard: React.FC = () => {
     );
   }
 
+  // Extract the actual statistics from the nested structure
+  const statistics = stats.statistics || {};
+  const recentOrders = stats.recentOrders || [];
+  
+  console.log('Statistics object:', statistics);
+  console.log('Recent orders:', recentOrders);
+
   const statCards = [
     {
       title: 'Total Orders',
-      value: stats.totalOrders,
+      value: statistics.totalOrders || 0,
       icon: ShoppingCart,
       color: 'text-primary-600',
       bgColor: 'bg-primary-50',
     },
     {
       title: 'New Orders',
-      value: stats.newOrders,
+      value: statistics.newOrders || 0,
       icon: Clock,
       color: 'text-warning-600',
       bgColor: 'bg-warning-50',
     },
     {
       title: 'Paid Orders',
-      value: stats.paidOrders,
+      value: statistics.paidOrders || 0,
       icon: CheckCircle,
       color: 'text-success-600',
       bgColor: 'bg-success-50',
     },
     {
       title: 'Ready for Delivery',
-      value: stats.readyForDeliveryOrders,
+      value: statistics.readyForDeliveryOrders || 0,
       icon: Truck,
       color: 'text-secondary-600',
       bgColor: 'bg-secondary-50',
@@ -121,7 +131,7 @@ export const Dashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold text-success-600">
-            ${stats.totalRevenue.toFixed(2)}
+            ${(statistics.totalRevenue || 0).toFixed(2)}
           </div>
           <p className="text-sm text-secondary-600 mt-1">
             All-time revenue from orders
@@ -135,9 +145,9 @@ export const Dashboard: React.FC = () => {
           <CardTitle>Recent Orders</CardTitle>
         </CardHeader>
         <CardContent>
-          {stats.recentOrders.length > 0 ? (
+          {recentOrders.length > 0 ? (
             <div className="space-y-4">
-              {stats.recentOrders.map((order) => (
+              {recentOrders.map((order) => (
                 <div
                   key={order.id}
                   className="flex items-center justify-between p-4 border rounded-lg"

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { Package, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
@@ -11,7 +11,7 @@ import { LoginForm as LoginFormType } from '@/types';
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuthContext();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +23,16 @@ export const LoginForm: React.FC = () => {
 
   const onSubmit = async (data: LoginFormType) => {
     setError(null);
+    console.log('LoginForm onSubmit called with:', data);
     const result = await login(data.username, data.password);
+    console.log('Login result:', result);
     
     if (result.success) {
+      console.log('Login successful, navigating to /admin');
       navigate('/admin');
+      console.log('Navigation called successfully');
     } else {
+      console.log('Login failed:', result.error);
       setError(result.error || 'Login failed');
     }
   };

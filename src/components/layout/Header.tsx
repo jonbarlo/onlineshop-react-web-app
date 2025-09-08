@@ -2,12 +2,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, LogOut, Package } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
 
 export const Header: React.FC = () => {
   const location = useLocation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuthContext();
   const { cart } = useCartContext();
 
   const isAdminRoute = location.pathname.startsWith('/admin');

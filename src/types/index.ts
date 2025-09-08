@@ -102,11 +102,13 @@ export interface UpdateOrderStatusRequest {
 
 // Dashboard Types
 export interface DashboardStats {
-  totalOrders: number;
-  newOrders: number;
-  paidOrders: number;
-  readyForDeliveryOrders: number;
-  totalRevenue: number;
+  statistics: {
+    totalOrders: number;
+    newOrders: number;
+    paidOrders: number;
+    readyForDeliveryOrders: number;
+    totalRevenue: number;
+  };
   recentOrders: Order[];
 }
 
