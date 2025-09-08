@@ -4,14 +4,14 @@ import { ShoppingCart, Plus } from 'lucide-react';
 import { Product } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useCart } from '@/hooks/useCart';
+import { useCartContext } from '@/contexts/CartContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart, getItemQuantity, cart } = useCart();
+  const { addToCart, getItemQuantity, cart } = useCartContext();
   const [quantityInCart, setQuantityInCart] = useState(0);
 
   // Update quantity when cart changes
@@ -23,6 +23,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = (e?: React.MouseEvent<HTMLButtonElement>) => {
     e?.preventDefault();
     e?.stopPropagation();
+    console.log('ProductCard: Adding to cart:', product.name);
     addToCart(product, 1);
   };
 

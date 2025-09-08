@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { ArrowLeft, ShoppingCart, Plus, Minus } from 'lucide-react';
@@ -6,12 +6,11 @@ import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { useCart } from '@/hooks/useCart';
-import { useState } from 'react';
+import { useCartContext } from '@/contexts/CartContext';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { addToCart, getItemQuantity, updateQuantity } = useCart();
+  const { addToCart, getItemQuantity, updateQuantity } = useCartContext();
   const [quantity, setQuantity] = useState(1);
 
   const { data, isLoading, error } = useQuery(

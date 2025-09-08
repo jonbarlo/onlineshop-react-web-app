@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, ArrowLeft } from 'lucide-react';
-import { useCart } from '@/hooks/useCart';
+import { useCartContext } from '@/contexts/CartContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CartItem } from './CartItem';
@@ -9,8 +9,10 @@ import { OrderForm } from './OrderForm';
 
 export const Cart: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart } = useCartContext();
   const [showOrderForm, setShowOrderForm] = useState(false);
+
+  console.log('Cart component rendered with cart:', cart);
 
   if (cart.items.length === 0) {
     return (

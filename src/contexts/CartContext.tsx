@@ -1,9 +1,32 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Cart, CartItem, Product } from '@/types';
 
 const CART_STORAGE_KEY = 'simpleShop_cart';
 
-export const useCart = () => {
+interface CartContextType {
+  cart: Cart;
+  addToCart: (product: Product, quantity?: number) => void;
+  removeFromCart: (productId: number) => void;
+  updateQuantity: (productId: number, quantity: number) => void;
+  clearCart: () => void;
+  getItemQuantity: (productId: number) => number;
+}
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export const useCartContext = () => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCartContext must be used within a CartProvider');
+  }
+  return context;
+};
+
+interface CartProviderProps {
+  children: ReactNode;
+}
+
+export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cart, setCart] = useState<Cart>({
     items: [],
     totalItems: 0,
@@ -13,14 +36,14 @@ export const useCart = () => {
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    console.log('Loading cart from localStorage:', savedCart);
+    console.log('CartProvider: Loading cart from localStorage:', savedCart);
     if (savedCart) {
       try {
         const parsedCart = JSON.parse(savedCart);
-        console.log('Parsed cart from localStorage:', parsedCart);
+        console.log('CartProvider: Parsed cart from localStorage:', parsedCart);
         setCart(parsedCart);
       } catch (error) {
-        console.error('Error parsing cart from localStorage:', error);
+        console.error('CartProvider: Error parsing cart from localStorage:', error);
         localStorage.removeItem(CART_STORAGE_KEY);
       }
     }
@@ -28,7 +51,7 @@ export const useCart = () => {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    console.log('Saving cart to localStorage:', cart);
+    console.log('CartProvider: Saving cart to localStorage:', cart);
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   }, [cart]);
 
@@ -39,9 +62,9 @@ export const useCart = () => {
   }, []);
 
   const addToCart = useCallback((product: Product, quantity: number = 1) => {
-    console.log('addToCart called with:', { product: product.name, quantity });
+    console.log('CartProvider: addToCart called with:', { product: product.name, quantity });
     setCart(prevCart => {
-      console.log('Current cart before adding:', prevCart);
+      console.log('CartProvider: Current cart before adding:', prevCart);
       const existingItemIndex = prevCart.items.findIndex(
         item => item.product.id === product.id
       );
@@ -66,7 +89,7 @@ export const useCart = () => {
         totalItems,
         totalAmount,
       };
-      console.log('New cart after adding:', newCart);
+      console.log('CartProvider: New cart after adding:', newCart);
       return newCart;
     });
   }, [calculateTotals]);
@@ -117,19 +140,18 @@ export const useCart = () => {
     return item ? item.quantity : 0;
   }, [cart.items]);
 
-  // Force re-render when cart changes
-  const [, forceUpdate] = useState({});
-  const triggerUpdate = useCallback(() => {
-    forceUpdate({});
-  }, []);
-
-  return {
+  const value: CartContextType = {
     cart,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
     getItemQuantity,
-    triggerUpdate,
   };
+
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 };
