@@ -7,6 +7,7 @@ import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { CreateProductRequest } from '@/types';
@@ -16,11 +17,13 @@ export const ProductCreate: React.FC = () => {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<CreateProductRequest>({
     defaultValues: {
       name: '',
@@ -42,6 +45,11 @@ export const ProductCreate: React.FC = () => {
       },
     }
   );
+
+  const handleImageChange = (url: string) => {
+    setImageUrl(url);
+    setValue('imageUrl', url);
+  };
 
   const onSubmit = async (data: CreateProductRequest) => {
     setIsSubmitting(true);
@@ -114,16 +122,11 @@ export const ProductCreate: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Image URL
-                  </label>
-                  <FormInput
-                    {...register('imageUrl')}
-                    placeholder="https://example.com/image.jpg"
-                    error={errors.imageUrl?.message}
-                  />
-                </div>
+                <ImageUpload
+                  value={imageUrl}
+                  onChange={handleImageChange}
+                  onError={setSubmitError}
+                />
               </div>
 
               <div className="space-y-4">

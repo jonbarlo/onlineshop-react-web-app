@@ -421,7 +421,137 @@ Authorization: Bearer <token>
 }
 ```
 
-### 8. Get Dashboard Statistics
+### 8. Upload Product Image
+**Endpoint:** `POST /api/upload/product-image`
+
+**Authentication:** Required (Admin JWT token)
+
+**Content-Type:** `multipart/form-data`
+
+**Request Body:**
+- `image` (file): Image file to upload
+
+**File Requirements:**
+- **Size Limit:** 5MB maximum
+- **Allowed Types:** JPEG, JPG, PNG, GIF, WebP
+- **Field Name:** `image`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Image uploaded successfully",
+  "data": {
+    "filename": "a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
+    "originalName": "product-image.jpg",
+    "size": 245760,
+    "imageUrl": "https://api.shop.506software.com/uploads/products/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg"
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Usage Example (JavaScript):**
+```javascript
+const formData = new FormData();
+formData.append('image', fileInput.files[0]);
+
+const response = await fetch('/api/upload/product-image', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+
+const result = await response.json();
+const imageUrl = result.data.imageUrl; // Use this URL in product creation/update
+```
+
+### 9. Delete Product Image
+**Endpoint:** `DELETE /api/upload/product-image/:filename`
+
+**Authentication:** Required (Admin JWT token)
+
+**Parameters:**
+- `filename` (string): The filename of the image to delete
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Image deleted successfully",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Usage Example:**
+```javascript
+const filename = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg';
+const response = await fetch(`/api/upload/product-image/${filename}`, {
+  method: 'DELETE',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+```
+
+### 10. Complete Image Upload Workflow
+
+**Step 1: Upload Image**
+```javascript
+// Upload the image file
+const formData = new FormData();
+formData.append('image', selectedFile);
+
+const uploadResponse = await fetch('/api/upload/product-image', {
+  method: 'POST',
+  headers: { 'Authorization': `Bearer ${token}` },
+  body: formData
+});
+
+const uploadResult = await uploadResponse.json();
+const imageUrl = uploadResult.data.imageUrl;
+```
+
+**Step 2: Create/Update Product with Image**
+```javascript
+// Create new product with uploaded image
+const productData = {
+  name: "New Product",
+  description: "Product description",
+  price: 29.99,
+  imageUrl: imageUrl // Use the URL from upload response
+};
+
+const productResponse = await fetch('/api/admin/products', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(productData)
+});
+```
+
+**Step 3: Update Existing Product Image**
+```javascript
+// Update existing product with new image
+const updateData = {
+  imageUrl: imageUrl // Replace with new image URL
+};
+
+const updateResponse = await fetch(`/api/admin/products/${productId}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(updateData)
+});
+```
+
+### 11. Get Dashboard Statistics
 **Endpoint:** `GET /api/admin/dashboard`
 
 **Response:**

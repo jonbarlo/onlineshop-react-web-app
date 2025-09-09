@@ -7,6 +7,7 @@ import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { UpdateProductRequest } from '@/types';
@@ -17,6 +18,7 @@ export const ProductEdit: React.FC = () => {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
 
   const { data, isLoading, error } = useQuery(
     ['product', id],
@@ -31,6 +33,7 @@ export const ProductEdit: React.FC = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<UpdateProductRequest>({
     defaultValues: {
       name: '',
@@ -45,6 +48,7 @@ export const ProductEdit: React.FC = () => {
   React.useEffect(() => {
     if (data?.data) {
       const product = data.data;
+      setImageUrl(product.imageUrl);
       reset({
         name: product.name,
         description: product.description,
@@ -68,6 +72,11 @@ export const ProductEdit: React.FC = () => {
       },
     }
   );
+
+  const handleImageChange = (url: string) => {
+    setImageUrl(url);
+    setValue('imageUrl', url);
+  };
 
   const onSubmit = async (data: UpdateProductRequest) => {
     setIsSubmitting(true);
@@ -164,16 +173,11 @@ export const ProductEdit: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Image URL
-                  </label>
-                  <FormInput
-                    {...register('imageUrl')}
-                    placeholder="https://example.com/image.jpg"
-                    error={errors.imageUrl?.message}
-                  />
-                </div>
+                <ImageUpload
+                  value={imageUrl}
+                  onChange={handleImageChange}
+                  onError={setSubmitError}
+                />
               </div>
 
               <div className="space-y-4">

@@ -14,6 +14,8 @@ import {
   PaginatedResponse,
   AdminOrdersApiResponse,
   ProductsApiResponse,
+  ImageUploadResponse,
+  ImageDeleteResponse,
 } from '@/types';
 
 class ApiService {
@@ -108,8 +110,42 @@ class ApiService {
   }
 
   async updateProduct(id: number, productData: UpdateProductRequest): Promise<ApiResponse<Product>> {
-    const response = await this.api.put(`/api/admin/products/${id}`, productData);
-    return response.data;
+    // Try different endpoint patterns
+    const endpoints = [
+      `/api/admin/products/${id}`,  // Standard REST endpoint first
+      `/api/admin/products/${id}/update`,  // Custom endpoint second
+    ];
+    
+    let lastError: unknown;
+    
+    for (let i = 0; i < endpoints.length; i++) {
+      const endpoint = endpoints[i];
+      try {
+        console.log(`Trying product update endpoint ${i + 1}/${endpoints.length}: ${endpoint}`);
+        const response = await this.api.put(endpoint, productData);
+        console.log(`Product update successful with endpoint: ${endpoint}`);
+        return response.data;
+      } catch (error: unknown) {
+        console.log(`Endpoint ${endpoint} failed:`, error);
+        lastError = error;
+        
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 404 && i < endpoints.length - 1) {
+            // Try next endpoint
+            console.log(`404 error on ${endpoint}, trying next endpoint...`);
+            continue;
+          }
+        }
+        
+        // If this is the last endpoint or not a 404, throw the error
+        if (i === endpoints.length - 1) {
+          throw error;
+        }
+      }
+    }
+    
+    throw lastError || new Error('No working endpoint found for product update');
   }
 
   async deleteProduct(id: number): Promise<ApiResponse> {
@@ -147,6 +183,24 @@ class ApiService {
   // Dashboard
   async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
     const response = await this.api.get('/api/admin/dashboard');
+    return response.data;
+  }
+
+  // Image Upload
+  async uploadProductImage(file: File): Promise<ImageUploadResponse> {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await this.api.post('/api/upload/product-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async deleteProductImage(filename: string): Promise<ImageDeleteResponse> {
+    const response = await this.api.delete(`/api/upload/product-image/${filename}`);
     return response.data;
   }
 }

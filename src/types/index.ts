@@ -38,6 +38,25 @@ export interface ProductsApiResponse {
   timestamp: string;
 }
 
+// Image Upload Types
+export interface ImageUploadResponse {
+  success: boolean;
+  message: string;
+  data: {
+    filename: string;
+    originalName: string;
+    size: number;
+    imageUrl: string;
+  };
+  timestamp: string;
+}
+
+export interface ImageDeleteResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+}
+
 // User Types
 export interface User {
   id: number;
