@@ -10,6 +10,68 @@
   body {
     @apply bg-secondary-50 text-secondary-900 font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark theme styles */
+  [data-theme="dark"] {
+    --tw-bg-opacity: 1;
+    --tw-text-opacity: 1;
+  }
+
+  [data-theme="dark"] body {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  [data-theme="dark"] .card {
+    @apply bg-gray-800 border-gray-700 text-gray-100;
+  }
+
+  [data-theme="dark"] .input {
+    @apply bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400;
+  }
+
+  [data-theme="dark"] .btn-outline {
+    @apply border-orange-500 text-orange-500 hover:bg-orange-500/10;
+  }
+
+  [data-theme="dark"] .btn-ghost {
+    @apply text-gray-400 hover:bg-gray-700 hover:text-gray-100;
+  }
+
+  /* Shop 506 gradient colors for dark theme */
+  [data-theme="dark"] .gradient-orange {
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+  }
+
+  [data-theme="dark"] .gradient-pink {
+    background: linear-gradient(135deg, #f7931e, #ff6b9d);
+  }
+
+  [data-theme="dark"] .gradient-purple {
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+  }
+
+  [data-theme="dark"] .gradient-cyan {
+    background: linear-gradient(135deg, #c44569, #00d4ff);
+  }
+
+  [data-theme="dark"] .gradient-full {
+    background: linear-gradient(135deg, #ff6b35, #f7931e, #ff6b9d, #c44569, #00d4ff);
+  }
+
+  /* Dark theme specific components */
+  [data-theme="dark"] .btn-primary {
+    @apply bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600;
+  }
+
+  [data-theme="dark"] .header-gradient {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  }
+
+  [data-theme="dark"] .card-gradient {
+    background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+    border: 1px solid #404040;
   }
 }
 

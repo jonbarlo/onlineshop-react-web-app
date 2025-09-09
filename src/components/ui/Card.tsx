@@ -67,7 +67,7 @@ export const CardDescription: React.FC<CardDescriptionProps> = ({
   className,
 }) => {
   return (
-    <p className={clsx('text-sm text-secondary-600', className)}>
+    <p className={clsx('text-sm text-secondary-600 dark:text-gray-400', className)}>
       {children}
     </p>
   );
