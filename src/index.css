@@ -4,13 +4,19 @@
 
 @layer base {
   * {
-    @apply border-secondary-200;
+    @apply border-gray-200 dark:border-gray-700;
+  }
+  
+  html {
+    scroll-behavior: smooth;
   }
   
   body {
-    @apply bg-secondary-50 text-secondary-900 font-sans;
+    @apply bg-white text-gray-900 font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Dark theme styles */
@@ -23,77 +29,61 @@
     @apply bg-gray-900 text-gray-100;
   }
 
-  [data-theme="dark"] .card {
-    @apply bg-gray-800 border-gray-700 text-gray-100;
+  /* Typography improvements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
   }
 
-  [data-theme="dark"] .input {
-    @apply bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400;
+  h1 {
+    @apply text-4xl lg:text-5xl;
   }
 
-  [data-theme="dark"] .btn-outline {
-    @apply border-orange-500 text-orange-500 hover:bg-orange-500/10;
+  h2 {
+    @apply text-3xl lg:text-4xl;
   }
 
-  [data-theme="dark"] .btn-ghost {
-    @apply text-gray-400 hover:bg-gray-700 hover:text-gray-100;
+  h3 {
+    @apply text-2xl lg:text-3xl;
   }
 
-  /* Shop 506 gradient colors for dark theme */
-  [data-theme="dark"] .gradient-orange {
-    background: linear-gradient(135deg, #ff6b35, #f7931e);
+  h4 {
+    @apply text-xl lg:text-2xl;
   }
 
-  [data-theme="dark"] .gradient-pink {
-    background: linear-gradient(135deg, #f7931e, #ff6b9d);
+  h5 {
+    @apply text-lg lg:text-xl;
   }
 
-  [data-theme="dark"] .gradient-purple {
-    background: linear-gradient(135deg, #ff6b9d, #c44569);
+  h6 {
+    @apply text-base lg:text-lg;
   }
 
-  [data-theme="dark"] .gradient-cyan {
-    background: linear-gradient(135deg, #c44569, #00d4ff);
-  }
-
-  [data-theme="dark"] .gradient-full {
-    background: linear-gradient(135deg, #ff6b35, #f7931e, #ff6b9d, #c44569, #00d4ff);
-  }
-
-  /* Dark theme specific components */
-  [data-theme="dark"] .btn-primary {
-    @apply bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600;
-  }
-
-  [data-theme="dark"] .header-gradient {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-  }
-
-  [data-theme="dark"] .card-gradient {
-    background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-    border: 1px solid #404040;
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
   }
 }
 
 @layer components {
+  /* Modern Button System */
   .btn {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white;
+    @apply inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white dark:ring-offset-gray-900;
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+    @apply bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-soft hover:shadow-medium;
   }
   
   .btn-secondary {
-    @apply bg-secondary-100 text-secondary-900 hover:bg-secondary-200 active:bg-secondary-300;
+    @apply bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:active:bg-gray-600;
   }
   
   .btn-outline {
-    @apply border border-primary-600 text-primary-600 hover:bg-primary-50 active:bg-primary-100;
+    @apply border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:active:bg-gray-700;
   }
   
   .btn-ghost {
-    @apply text-secondary-600 hover:bg-secondary-100 active:bg-secondary-200;
+    @apply text-gray-600 hover:bg-gray-100 active:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-800 dark:active:bg-gray-700;
   }
   
   .btn-sm {
@@ -105,19 +95,66 @@
   }
   
   .btn-lg {
-    @apply h-12 px-8 text-base;
+    @apply h-12 px-6 text-base;
   }
   
+  /* Modern Card System */
   .card {
-    @apply rounded-lg border border-secondary-200 bg-white text-secondary-900 shadow-sm;
+    @apply rounded-2xl border border-gray-200 bg-white text-gray-900 shadow-soft hover:shadow-medium transition-shadow duration-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100;
   }
   
+  .card-elevated {
+    @apply shadow-medium hover:shadow-large;
+  }
+  
+  /* Modern Input System */
   .input {
-    @apply flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-secondary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:ring-offset-gray-900;
   }
   
+  .input-lg {
+    @apply h-12 px-4 py-3 text-base;
+  }
+  
+  /* Label System */
   .label {
-    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 dark:text-gray-300;
+  }
+  
+  /* Navigation Components */
+  .nav-link {
+    @apply text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors duration-200 font-medium;
+  }
+  
+  .nav-link-active {
+    @apply text-brand-600 dark:text-brand-400;
+  }
+  
+  /* Category Cards */
+  .category-card {
+    @apply relative overflow-hidden rounded-2xl bg-white shadow-soft hover:shadow-medium transition-all duration-300 dark:bg-gray-800;
+  }
+  
+  .category-card:hover {
+    @apply transform -translate-y-1;
+  }
+  
+  /* Product Cards */
+  .product-card {
+    @apply relative overflow-hidden rounded-2xl bg-white shadow-soft hover:shadow-medium transition-all duration-300 dark:bg-gray-800;
+  }
+  
+  .product-card:hover {
+    @apply transform -translate-y-1;
+  }
+  
+  /* Hero Section */
+  .hero-gradient {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  }
+  
+  [data-theme="dark"] .hero-gradient {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   }
 }
 

@@ -17,13 +17,11 @@ if (-not (Test-Path "dist")) {
 
 # Load environment variables
 $envFile = ".env.$Environment"
-if (-not (Test-Path $envFile)) {
-    $envFile = ".env"
-}
 
 if (-not (Test-Path $envFile)) {
-    Write-Host "Error: Environment file not found!" -ForegroundColor Red
+    Write-Host "Error: Environment file .env.$Environment not found!" -ForegroundColor Red
     Write-Host "Please create a .env.production file with your FTP credentials and API settings." -ForegroundColor Yellow
+    Write-Host "The deployment requires a production environment file to ensure proper configuration." -ForegroundColor Yellow
     exit 1
 }
 
@@ -174,13 +172,9 @@ if (Test-Path "web.config") {
     Write-Host "Consider creating a web.config file for IIS SPA support" -ForegroundColor Yellow
 }
 
-# Upload production environment file as .env (if it exists)
-if (Test-Path ".env.production") {
-    Upload-File -LocalPath ".env.production" -RemotePath ".env"
-    Write-Host "Uploaded: .env.production as .env" -ForegroundColor Green
-} else {
-    Write-Host "Warning: .env.production not found - environment variables won't be deployed" -ForegroundColor Yellow
-}
+# Upload production environment file as .env
+Upload-File -LocalPath ".env.production" -RemotePath ".env"
+Write-Host "Uploaded: .env.production as .env" -ForegroundColor Green
 
 $endTime = Get-Date
 $duration = $endTime - $startTime

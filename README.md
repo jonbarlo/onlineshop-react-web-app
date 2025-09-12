@@ -28,6 +28,21 @@ A modern, scalable, and performant React e-commerce web application built with T
 - **Icons**: Lucide React
 - **HTTP Client**: Axios
 - **Build Tool**: Vite
+
+## ⚙️ Environment Variables
+
+The application supports customization through environment variables:
+
+### Required Variables
+- `VITE_API_BASE_URL` - Backend API base URL
+
+### Optional Variables
+- `VITE_SITE_NAME` - Website name (default: "Shop 506")
+- `VITE_SITE_DESCRIPTION` - Website description (default: "Online Store")
+
+### Example Environment Files
+- Copy `env.example` to `.env` for development
+- Copy `env.production.example` to `.env.production` for production
 - **Linting**: ESLint + TypeScript ESLint
 
 ## 📦 Installation

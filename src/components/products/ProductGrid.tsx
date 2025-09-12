@@ -7,12 +7,14 @@ interface ProductGridProps {
   products: Product[];
   loading?: boolean;
   error?: string | null;
+  viewMode?: 'grid' | 'list';
 }
 
 export const ProductGrid: React.FC<ProductGridProps> = ({
   products,
   loading = false,
   error = null,
+  viewMode = 'grid',
 }) => {
   
   if (loading) {
@@ -26,8 +28,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-error-600 mb-4">Failed to load products</p>
-        <p className="text-secondary-600">{error}</p>
+        <p className="text-red-600 mb-4">Failed to load products</p>
+        <p className="text-gray-600 dark:text-gray-400">{error}</p>
       </div>
     );
   }
@@ -35,7 +37,52 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-secondary-600">No products found</p>
+        <p className="text-gray-600 dark:text-gray-400">No products found</p>
+      </div>
+    );
+  }
+
+  if (viewMode === 'list') {
+    return (
+      <div className="space-y-4">
+        {products.map((product) => (
+          <div key={product.id} className="product-card">
+            <div className="flex">
+              <div className="w-32 h-32 flex-shrink-0">
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="w-full h-full object-cover rounded-l-2xl"
+                />
+              </div>
+              <div className="flex-1 p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-xl font-bold text-gray-900 dark:text-white">
+                        ${product.price.toFixed(2)}
+                      </span>
+                      <span className="text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-lg">
+                        {product.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <button className="btn-primary px-4 py-2">
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

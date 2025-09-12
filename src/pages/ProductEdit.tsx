@@ -21,10 +21,15 @@ export const ProductEdit: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
 
   const { data, isLoading, error } = useQuery(
-    ['product', id],
-    () => apiService.getProduct(Number(id)),
+    ['admin-product', id],
+    () => apiService.getAdminProduct(Number(id)),
     {
       enabled: !!id,
+      onSuccess: (response) => {
+        console.log('ProductEdit - API Response received:', response);
+        console.log('ProductEdit - Product data:', response.data);
+        console.log('ProductEdit - Category from API:', response.data?.category);
+      }
     }
   );
 
@@ -34,40 +39,84 @@ export const ProductEdit: React.FC = () => {
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm<UpdateProductRequest>({
     defaultValues: {
       name: '',
       description: '',
       price: 0,
       imageUrl: '',
+      category: '',
       isActive: true,
+      quantity: 0,
     },
   });
+
+  // Watch form values for debugging
+  const watchedValues = watch();
+  console.log('ProductEdit - Current form values:', watchedValues);
+  console.log('ProductEdit - Category value:', watchedValues.category);
 
   // Reset form when product data loads
   React.useEffect(() => {
     if (data?.data) {
       const product = data.data;
+      console.log('ProductEdit - Loading product data:', product);
+      console.log('ProductEdit - Product category value:', product.category);
+      console.log('ProductEdit - Product category type:', typeof product.category);
       setImageUrl(product.imageUrl);
+      
+      // Reset form with all values - handle category object
       reset({
         name: product.name,
         description: product.description,
         price: product.price,
         imageUrl: product.imageUrl,
+        category: (typeof product.category === 'object' && product.category !== null) ? (product.category as any).slug : product.category || '',
         isActive: product.isActive,
+        quantity: product.quantity,
       });
+      
+      console.log('ProductEdit - Form reset with category:', product.category);
     }
   }, [data, reset]);
+
+  // Additional effect to ensure category is set after form reset
+  React.useEffect(() => {
+    if (data?.data) {
+      // Use setTimeout to ensure this runs after the reset
+      setTimeout(() => {
+        const categoryValue = data.data ? ((typeof data.data.category === 'object' && data.data.category !== null) ? (data.data.category as any).slug : data.data.category) || '' : '';
+        setValue('category', categoryValue);
+        console.log('ProductEdit - Category setValue called with:', categoryValue);
+      }, 100);
+    }
+  }, [data, setValue]);
 
   const updateProductMutation = useMutation(
     (productData: UpdateProductRequest) => apiService.updateProduct(Number(id), productData),
     {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        console.log('ProductEdit - Update successful, response:', response);
+        console.log('ProductEdit - Invalidating queries...');
+        
+        // Invalidate all related queries more aggressively
         queryClient.invalidateQueries(['product', id]);
         queryClient.invalidateQueries(['admin-products']);
-        navigate('/admin/products');
+        queryClient.invalidateQueries(['products']);
+        queryClient.invalidateQueries(['products', 'category']);
+        
+        // Force refetch of the products list
+        queryClient.refetchQueries(['admin-products']);
+        
+        // Wait a moment for cache to update before navigating
+        setTimeout(() => {
+          console.log('ProductEdit - Navigating to products list');
+          navigate('/admin/products');
+        }, 100);
       },
       onError: (error: any) => {
+        console.log('ProductEdit - Update failed, error:', error);
         setSubmitError(error.response?.data?.message || 'Failed to update product');
       },
     }
@@ -81,6 +130,8 @@ export const ProductEdit: React.FC = () => {
   const onSubmit = async (data: UpdateProductRequest) => {
     setIsSubmitting(true);
     setSubmitError(null);
+    
+    console.log('ProductEdit - Form data being submitted:', data);
     
     try {
       await updateProductMutation.mutateAsync(data);
@@ -127,7 +178,7 @@ export const ProductEdit: React.FC = () => {
           Back to Products
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900">Edit Product</h1>
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Edit Product</h1>
           <p className="text-secondary-600">Update product information</p>
         </div>
       </div>
@@ -171,6 +222,65 @@ export const ProductEdit: React.FC = () => {
                     placeholder="0.00"
                     error={errors.price?.message}
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Stock Quantity *
+                  </label>
+                  <FormInput
+                    {...register('quantity', { 
+                      required: 'Stock quantity is required',
+                      min: { value: 0, message: 'Quantity must be 0 or greater' }
+                    })}
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    error={errors.quantity?.message}
+                  />
+                  <p className="mt-1 text-xs text-secondary-500">
+                    Set to 0 to mark as sold out
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Category *
+                    {watchedValues.category && (
+                      <span className="ml-2 text-sm text-green-600 font-normal">
+                        (Current: {typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).name : watchedValues.category})
+                      </span>
+                    )}
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        console.log('Manual test - setting category to sports');
+                        setValue('category', 'sports');
+                      }}
+                      className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded"
+                    >
+                      Test Set Sports
+                    </button>
+                  </label>
+                  <select
+                    value={typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).slug || '' : watchedValues.category || ''}
+                    onChange={(e) => setValue('category', e.target.value)}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="home-garden">Home & Garden</option>
+                    <option value="sports-outdoors">Sports & Outdoors</option>
+                    <option value="books">Books</option>
+                    <option value="automotive">Automotive</option>
+                    <option value="health-beauty">Health & Beauty</option>
+                    <option value="baby-kids">Baby & Kids</option>
+                  </select>
+                  {!watchedValues.category && (
+                    <p className="mt-1 text-sm text-error-600">Category is required</p>
+                  )}
                 </div>
 
                 <ImageUpload

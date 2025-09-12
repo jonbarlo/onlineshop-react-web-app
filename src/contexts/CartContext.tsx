@@ -63,6 +63,19 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const addToCart = useCallback((product: Product, quantity: number = 1) => {
     console.log('CartProvider: addToCart called with:', { product: product.name, quantity });
+    
+    // Check if product is available
+    if (product.status === 'sold_out') {
+      console.warn('CartProvider: Cannot add sold out product to cart:', product.name);
+      return;
+    }
+    
+    // Check if there's enough inventory
+    if (product.quantity < quantity) {
+      console.warn('CartProvider: Not enough inventory for product:', product.name, 'requested:', quantity, 'available:', product.quantity);
+      return;
+    }
+    
     setCart(prevCart => {
       console.log('CartProvider: Current cart before adding:', prevCart);
       const existingItemIndex = prevCart.items.findIndex(
@@ -70,17 +83,31 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       );
 
       let newItems: CartItem[];
+      let newQuantity = quantity;
 
       if (existingItemIndex >= 0) {
+        // Check if adding this quantity would exceed available inventory
+        const currentQuantity = prevCart.items[existingItemIndex].quantity;
+        const totalQuantity = currentQuantity + quantity;
+        
+        if (totalQuantity > product.quantity) {
+          console.warn('CartProvider: Adding quantity would exceed inventory:', product.name, 'current:', currentQuantity, 'adding:', quantity, 'available:', product.quantity);
+          newQuantity = product.quantity - currentQuantity;
+          if (newQuantity <= 0) {
+            console.warn('CartProvider: Cannot add more of this product, inventory exceeded');
+            return prevCart;
+          }
+        }
+        
         // Update existing item
         newItems = prevCart.items.map((item, index) =>
           index === existingItemIndex
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: item.quantity + newQuantity }
             : item
         );
       } else {
         // Add new item
-        newItems = [...prevCart.items, { product, quantity }];
+        newItems = [...prevCart.items, { product, quantity: newQuantity }];
       }
 
       const { totalItems, totalAmount } = calculateTotals(newItems);
@@ -113,6 +140,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
 
     setCart(prevCart => {
+      const item = prevCart.items.find(item => item.product.id === productId);
+      if (!item) return prevCart;
+      
+      // Check if the new quantity exceeds available inventory
+      if (quantity > item.product.quantity) {
+        console.warn('CartProvider: Cannot update quantity, exceeds inventory:', item.product.name, 'requested:', quantity, 'available:', item.product.quantity);
+        return prevCart;
+      }
+
       const newItems = prevCart.items.map(item =>
         item.product.id === productId
           ? { ...item, quantity }

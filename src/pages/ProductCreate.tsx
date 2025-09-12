@@ -30,6 +30,8 @@ export const ProductCreate: React.FC = () => {
       description: '',
       price: 0,
       imageUrl: '',
+      category: '',
+      quantity: 0,
     },
   });
 
@@ -76,7 +78,7 @@ export const ProductCreate: React.FC = () => {
           Back to Products
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900">Create Product</h1>
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Create Product</h1>
           <p className="text-secondary-600">Add a new product to your catalog</p>
         </div>
       </div>
@@ -120,6 +122,48 @@ export const ProductCreate: React.FC = () => {
                     placeholder="0.00"
                     error={errors.price?.message}
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Initial Stock Quantity *
+                  </label>
+                  <FormInput
+                    {...register('quantity', { 
+                      required: 'Initial stock quantity is required',
+                      min: { value: 0, message: 'Quantity must be 0 or greater' }
+                    })}
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    error={errors.quantity?.message}
+                  />
+                  <p className="mt-1 text-xs text-secondary-500">
+                    Set to 0 to mark as sold out initially
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Category *
+                  </label>
+                  <select
+                    {...register('category', { required: 'Category is required' })}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="">Select a category</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="home">Home & Garden</option>
+                    <option value="sports">Sports</option>
+                    <option value="books">Books</option>
+                    <option value="automotive">Automotive</option>
+                    <option value="health">Health & Beauty</option>
+                    <option value="baby">Baby & Kids</option>
+                  </select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-error-600">{errors.category.message}</p>
+                  )}
                 </div>
 
                 <ImageUpload

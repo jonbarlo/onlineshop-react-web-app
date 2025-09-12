@@ -42,7 +42,7 @@ export const LoginForm: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Package className="h-12 w-12 text-primary-600 mx-auto" />
-          <h2 className="mt-6 text-3xl font-bold text-secondary-900">
+          <h2 className="mt-6 text-3xl font-bold text-secondary-900 dark:text-white">
             Admin Login
           </h2>
           <p className="mt-2 text-sm text-secondary-600">

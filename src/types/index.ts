@@ -1,3 +1,9 @@
+// App Configuration
+export interface AppConfig {
+  siteName: string;
+  siteDescription: string;
+}
+
 // API Response Types
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -76,7 +82,10 @@ export interface Product {
   description: string;
   price: number;
   imageUrl: string;
+  category: string;
   isActive: boolean;
+  quantity: number;
+  status: 'available' | 'sold_out';
   createdAt: string;
   updatedAt: string;
 }
@@ -86,6 +95,8 @@ export interface CreateProductRequest {
   description: string;
   price: number;
   imageUrl: string;
+  category: string;
+  quantity: number;
 }
 
 export interface UpdateProductRequest {
@@ -93,7 +104,9 @@ export interface UpdateProductRequest {
   description?: string;
   price?: number;
   imageUrl?: string;
+  category?: string;
   isActive?: boolean;
+  quantity?: number;
 }
 
 // Order Types
@@ -155,6 +168,7 @@ export interface ProductQueryParams {
   page?: number;
   limit?: number;
   search?: string;
+  category?: string;
 }
 
 export interface OrderQueryParams {

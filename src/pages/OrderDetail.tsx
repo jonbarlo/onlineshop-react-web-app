@@ -121,7 +121,7 @@ export const OrderDetail: React.FC = () => {
                 Back to Orders
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-secondary-900">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
               Order #{order.orderNumber}
             </h1>
           </div>

@@ -30,6 +30,18 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
     setIsSubmitting(true);
     setSubmitError(null);
 
+    // Frontend validation: Check if any items are sold out or have insufficient inventory
+    const unavailableItems = cart.items.filter(item => 
+      item.product.status === 'sold_out' || item.quantity > item.product.quantity
+    );
+
+    if (unavailableItems.length > 0) {
+      const itemNames = unavailableItems.map(item => item.product.name).join(', ');
+      setSubmitError(`Some items in your cart are no longer available: ${itemNames}. Please remove them and try again.`);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const orderData = {
         ...data,
@@ -141,10 +153,18 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
               <h3 className="font-semibold text-secondary-900 mb-2">Order Summary</h3>
               <div className="space-y-2 text-sm">
                 {cart.items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between">
-                    <span>
-                      {item.product.name} x {item.quantity}
-                    </span>
+                  <div key={item.product.id} className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <span>
+                        {item.product.name} x {item.quantity}
+                      </span>
+                      {item.product.status === 'sold_out' && (
+                        <span className="ml-2 text-xs text-red-600 font-medium">(Sold Out)</span>
+                      )}
+                      {item.product.status === 'available' && item.quantity > item.product.quantity && (
+                        <span className="ml-2 text-xs text-orange-600 font-medium">(Insufficient Stock)</span>
+                      )}
+                    </div>
                     <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}

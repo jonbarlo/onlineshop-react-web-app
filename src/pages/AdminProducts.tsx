@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export const AdminProducts: React.FC = () => {
   const navigate = useNavigate();
@@ -63,9 +64,12 @@ export const AdminProducts: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb className="mb-4" />
+      
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900">Products</h1>
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Products</h1>
           <p className="text-secondary-600">Manage your product catalog</p>
         </div>
         <Button onClick={() => navigate('/admin/products/new')}>
@@ -92,56 +96,121 @@ export const AdminProducts: React.FC = () => {
       </Card>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {products.map((product) => (
           <Card key={product.id} className="overflow-hidden">
-            <div className="aspect-square overflow-hidden">
+            <div className="aspect-square overflow-hidden relative">
               <img
                 src={product.imageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
-            </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-secondary-900 mb-2 line-clamp-2">
-                {product.name}
-              </h3>
-              <p className="text-sm text-secondary-600 mb-3 line-clamp-2">
-                {product.description}
-              </p>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-bold text-primary-600">
-                  ${product.price.toFixed(2)}
-                </span>
+              {/* Status Badge */}
+              <div className="absolute top-2 right-2">
                 <span
-                  className={`text-xs px-2 py-1 rounded ${
-                    product.isActive
-                      ? 'bg-success-100 text-success-800'
-                      : 'bg-error-100 text-error-800'
+                  className={`text-xs px-2 py-1 rounded-full backdrop-blur-sm ${
+                    product.status === 'sold_out'
+                      ? 'bg-gray-500 text-white'
+                      : product.quantity <= 5
+                      ? 'bg-yellow-500 text-white'
+                      : 'bg-green-500 text-white'
                   }`}
                 >
-                  {product.isActive ? 'Active' : 'Inactive'}
+                  {product.status === 'sold_out' ? 'Sold Out' : 
+                   product.quantity <= 5 ? 'Low Stock' : 'In Stock'}
                 </span>
               </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/admin/products/${product.id}/edit`)}
-                  className="flex-1"
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteProduct(product.id, product.name)}
-                  className="text-error-600 hover:text-error-700"
-                  disabled={deleteProductMutation.isLoading}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+            </div>
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                {/* Product Name */}
+                <h3 className="font-semibold text-secondary-900 line-clamp-2">
+                  {product.name}
+                </h3>
+                
+                {/* Description */}
+                <p className="text-sm text-secondary-600 line-clamp-2">
+                  {product.description}
+                </p>
+
+                {/* Price */}
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold text-primary-600">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  <span
+                    className={`text-xs px-2 py-1 rounded ${
+                      product.isActive
+                        ? 'bg-success-100 text-success-800'
+                        : 'bg-error-100 text-error-800'
+                    }`}
+                  >
+                    {product.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+
+                {/* Inventory Details */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-secondary-600">Stock Quantity:</span>
+                    <span className={`font-medium ${
+                      product.quantity === 0 ? 'text-error-600' :
+                      product.quantity <= 5 ? 'text-yellow-600' :
+                      'text-success-600'
+                    }`}>
+                      {product.quantity} units
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-secondary-600">Status:</span>
+                    <span className={`font-medium ${
+                      product.status === 'sold_out' ? 'text-error-600' : 'text-success-600'
+                    }`}>
+                      {product.status === 'sold_out' ? 'Sold Out' : 'Available'}
+                    </span>
+                  </div>
+
+                  {/* Category */}
+                  {product.category && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-secondary-600">Category:</span>
+                      <span className="font-medium text-secondary-900">
+                        {typeof product.category === 'object' && product.category !== null ? (product.category as any).name : product.category}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Created Date */}
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-secondary-600">Created:</span>
+                    <span className="font-medium text-secondary-900">
+                      {new Date(product.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/admin/products/${product.id}/edit`)}
+                    className="flex-1"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteProduct(product.id, product.name)}
+                    className="text-error-600 hover:text-error-700"
+                    disabled={deleteProductMutation.isLoading}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

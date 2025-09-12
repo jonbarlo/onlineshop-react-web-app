@@ -120,7 +120,7 @@ export const OrderEdit: React.FC = () => {
                 Back to Order
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-secondary-900">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
               Edit Order #{order.orderNumber}
             </h1>
           </div>

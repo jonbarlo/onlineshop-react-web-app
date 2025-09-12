@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProductList } from '@/pages/ProductList';
 import { ProductDetail } from '@/pages/ProductDetail';
+import { CategoryPage } from '@/pages/CategoryPage';
 import { Cart } from '@/pages/Cart';
 import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
@@ -21,6 +22,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<ProductList />} />
         <Route path="products/:id" element={<ProductDetail />} />
+        <Route path="category/:category" element={<CategoryPage />} />
         <Route path="cart" element={<Cart />} />
       </Route>
 

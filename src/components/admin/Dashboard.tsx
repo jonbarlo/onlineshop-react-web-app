@@ -15,6 +15,7 @@ import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export const Dashboard: React.FC = () => {
   const { data, isLoading, error } = useQuery(
@@ -94,8 +95,11 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb className="mb-4" />
+      
       <div>
-        <h1 className="text-3xl font-bold text-secondary-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Dashboard</h1>
         <p className="text-secondary-600">Overview of your store performance</p>
       </div>
 

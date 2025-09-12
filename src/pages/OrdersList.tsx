@@ -97,7 +97,7 @@ export const OrdersList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900">Orders</h1>
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Orders</h1>
           <p className="text-secondary-600">Manage and track customer orders</p>
         </div>
         <Link to="/admin/orders/new">

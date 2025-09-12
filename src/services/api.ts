@@ -87,6 +87,19 @@ class ApiService {
     return response.data;
   }
 
+  async getProductsByCategory(category: string, params: Omit<ProductQueryParams, 'category'> = {}): Promise<ApiResponse<PaginatedResponse<Product>>> {
+    // Backend expects categorySlug parameter, not category
+    const requestParams = { ...params, categorySlug: category };
+    console.log('API Service - getProductsByCategory called with:', { category, params, requestParams });
+    
+    const response = await this.api.get('/api/products', { 
+      params: requestParams 
+    });
+    
+    console.log('API Service - getProductsByCategory response:', response.data);
+    return response.data;
+  }
+
   async getProduct(id: number): Promise<ApiResponse<Product>> {
     const response = await this.api.get(`/api/products/${id}`);
     return response.data;
@@ -100,7 +113,12 @@ class ApiService {
 
   // Admin Products
   async getAdminProducts(params: ProductQueryParams = {}): Promise<ProductsApiResponse> {
-    const response = await this.api.get('/api/products', { params });
+    const response = await this.api.get('/api/admin/products', { params });
+    return response.data;
+  }
+
+  async getAdminProduct(id: number): Promise<ApiResponse<Product>> {
+    const response = await this.api.get(`/api/admin/products/${id}`);
     return response.data;
   }
 
@@ -110,42 +128,24 @@ class ApiService {
   }
 
   async updateProduct(id: number, productData: UpdateProductRequest): Promise<ApiResponse<Product>> {
-    // Try different endpoint patterns
-    const endpoints = [
-      `/api/admin/products/${id}`,  // Standard REST endpoint first
-      `/api/admin/products/${id}/update`,  // Custom endpoint second
-    ];
+    // Use the correct endpoint pattern
+    const endpoint = `/api/admin/products/${id}`;
     
-    let lastError: unknown;
-    
-    for (let i = 0; i < endpoints.length; i++) {
-      const endpoint = endpoints[i];
-      try {
-        console.log(`Trying product update endpoint ${i + 1}/${endpoints.length}: ${endpoint}`);
-        const response = await this.api.put(endpoint, productData);
-        console.log(`Product update successful with endpoint: ${endpoint}`);
-        return response.data;
-      } catch (error: unknown) {
-        console.log(`Endpoint ${endpoint} failed:`, error);
-        lastError = error;
-        
-        if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as { response?: { status?: number } };
-          if (axiosError.response?.status === 404 && i < endpoints.length - 1) {
-            // Try next endpoint
-            console.log(`404 error on ${endpoint}, trying next endpoint...`);
-            continue;
-          }
-        }
-        
-        // If this is the last endpoint or not a 404, throw the error
-        if (i === endpoints.length - 1) {
-          throw error;
-        }
+    try {
+      console.log(`Updating product with endpoint: ${endpoint}`);
+      console.log('Product data being sent:', JSON.stringify(productData, null, 2));
+      const response = await this.api.put(endpoint, productData);
+      console.log(`Product update successful with endpoint: ${endpoint}`);
+      return response.data;
+    } catch (error: unknown) {
+      console.log(`Endpoint ${endpoint} failed:`, error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: any; status?: number } };
+        console.log('Backend error response:', axiosError.response?.data);
+        console.log('Backend error status:', axiosError.response?.status);
       }
+      throw error;
     }
-    
-    throw lastError || new Error('No working endpoint found for product update');
   }
 
   async deleteProduct(id: number): Promise<ApiResponse> {

@@ -80,7 +80,7 @@ export const OrderList: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-secondary-900">Orders</h1>
+        <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Orders</h1>
         <p className="text-secondary-600">Manage customer orders</p>
       </div>
 
