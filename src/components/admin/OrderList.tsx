@@ -8,7 +8,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { OrderStatus } from '@/types';
@@ -45,9 +46,61 @@ export const OrderList: React.FC = () => {
   const allOrders = data?.data || [];
   const pagination = data?.pagination;
 
-  // Client-side sorting
+  // Calculate total amount from order items if totalAmount is 0 or missing
+  const calculateOrderTotal = (order: any) => {
+    if (order.totalAmount && order.totalAmount > 0) {
+      return order.totalAmount;
+    }
+    
+    // Calculate from items if totalAmount is 0 or missing
+    if (order.items && Array.isArray(order.items)) {
+      return order.items.reduce((total: number, item: any) => {
+        return total + (item.quantity * item.unitPrice);
+      }, 0);
+    }
+    
+    return 0;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  // Client-side search and sorting
   const orders = useMemo(() => {
-    const sorted = [...allOrders].sort((a, b) => {
+    let filtered = [...allOrders];
+
+    // Apply search filter if search term exists
+    if (search.trim()) {
+      const searchTerm = search.toLowerCase().trim();
+      filtered = filtered.filter((order) => {
+        // Search across multiple fields
+        const orderNumber = order.orderNumber?.toLowerCase() || '';
+        const customerName = order.customerName?.toLowerCase() || '';
+        const customerEmail = order.customerEmail?.toLowerCase() || '';
+        const status = order.status?.toLowerCase() || '';
+        const totalAmount = calculateOrderTotal(order).toString();
+        const createdAt = formatDate(order.createdAt).toLowerCase();
+
+        return (
+          orderNumber.includes(searchTerm) ||
+          customerName.includes(searchTerm) ||
+          customerEmail.includes(searchTerm) ||
+          status.includes(searchTerm) ||
+          totalAmount.includes(searchTerm) ||
+          createdAt.includes(searchTerm)
+        );
+      });
+    }
+
+    // Apply sorting
+    const sorted = filtered.sort((a, b) => {
       let aValue: any = a[sortField];
       let bValue: any = b[sortField];
 
@@ -69,7 +122,7 @@ export const OrderList: React.FC = () => {
     });
 
     return sorted;
-  }, [allOrders, sortField, sortDirection]);
+  }, [allOrders, search, sortField, sortDirection]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -89,22 +142,6 @@ export const OrderList: React.FC = () => {
       <ChevronDown className="h-4 w-4 text-primary-600" />;
   };
 
-  // Calculate total amount from order items if totalAmount is 0 or missing
-  const calculateOrderTotal = (order: any) => {
-    if (order.totalAmount && order.totalAmount > 0) {
-      return order.totalAmount;
-    }
-    
-    // Calculate from items if totalAmount is 0 or missing
-    if (order.items && Array.isArray(order.items)) {
-      return order.items.reduce((total: number, item: any) => {
-        return total + (item.quantity * item.unitPrice);
-      }, 0);
-    }
-    
-    return 0;
-  };
-
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
       case 'new':
@@ -116,16 +153,6 @@ export const OrderList: React.FC = () => {
       default:
         return 'bg-secondary-100 text-secondary-800';
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   if (isLoading) {
@@ -159,11 +186,19 @@ export const OrderList: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                 <Input
-                  placeholder="Search orders..."
+                  placeholder="Search by order number, customer name, email, status, amount, or date..."
                   value={search}
                   onChange={setSearch}
-                  className="pl-10"
+                  className="pl-10 pr-10"
                 />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400 hover:text-secondary-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
             <div className="sm:w-48">
@@ -186,8 +221,10 @@ export const OrderList: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm font-medium text-secondary-600">Total Orders</div>
-            <div className="text-2xl font-bold text-secondary-900">{allOrders.length}</div>
+            <div className="text-sm font-medium text-secondary-600">
+              {search ? `Filtered Orders (${orders.length} of ${allOrders.length})` : 'Total Orders'}
+            </div>
+            <div className="text-2xl font-bold text-secondary-900">{orders.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -337,7 +374,17 @@ export const OrderList: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-secondary-600">No orders found</p>
+              <p className="text-secondary-600">
+                {search ? `No orders found matching "${search}"` : 'No orders found'}
+              </p>
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="mt-2 text-primary-600 hover:text-primary-700 underline"
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           )}
         </CardContent>
