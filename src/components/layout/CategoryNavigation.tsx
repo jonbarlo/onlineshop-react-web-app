@@ -23,7 +23,7 @@ const categories: Category[] = [
   { id: 'electronics', name: 'Electronics', icon: Smartphone, href: '/category/electronics' },
   { id: 'clothing', name: 'Clothing', icon: Shirt, href: '/category/clothing' },
   { id: 'home', name: 'Home & Garden', icon: Home, href: '/category/home' },
-  { id: 'sports', name: 'Sports', icon: Gamepad2, href: '/category/sports' },
+  { id: 'sports-outdoors', name: 'Sports & Outdoors', icon: Gamepad2, href: '/category/sports-outdoors' },
   { id: 'books', name: 'Books', icon: BookOpen, href: '/category/books' },
   { id: 'automotive', name: 'Automotive', icon: Car, href: '/category/automotive' },
   { id: 'health', name: 'Health & Beauty', icon: Heart, href: '/category/health' },

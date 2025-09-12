@@ -27,8 +27,8 @@ const categoryInfo: Record<string, { name: string; description: string; icon: st
     description: 'Furniture, decor, kitchen essentials, and garden supplies',
     icon: '🏠'
   },
-  sports: {
-    name: 'Sports',
+  'sports-outdoors': {
+    name: 'Sports & Outdoors',
     description: 'Athletic gear, fitness equipment, and outdoor adventure',
     icon: '⚽'
   },
@@ -63,7 +63,7 @@ export const CategoryPage: React.FC = () => {
   const categoryData = category ? categoryInfo[category] : null;
 
   const { data, isLoading, error } = useQuery(
-    ['products', 'category', category, page, search],
+    ['products', 'category', category],
     () => {
       if (!category) {
         return Promise.resolve({
@@ -75,12 +75,10 @@ export const CategoryPage: React.FC = () => {
       }
       
       console.log('Fetching products for category:', category);
-      console.log('Search params:', { page, limit: 12, search: search || undefined });
       
       return apiService.getProductsByCategory(category, {
-        page,
-        limit: 12,
-        search: search || undefined,
+        page: 1,
+        limit: 50, // Get more products for client-side filtering
       });
     },
     {
@@ -97,8 +95,33 @@ export const CategoryPage: React.FC = () => {
   console.log('CategoryPage - Loading:', isLoading);
 
   // Handle the actual API response structure - check both possible structures
-  const products = data?.data?.items ? data.data.items : (Array.isArray(data?.data) ? data.data : []);
-  const pagination = data?.data?.pagination;
+  const allProducts = data?.data?.items ? data.data.items : (Array.isArray(data?.data) ? data.data : []);
+  
+  // Client-side filtering and pagination
+  const filteredProducts = search 
+    ? allProducts.filter(product => 
+        product.name.toLowerCase().includes(search.toLowerCase()) ||
+        product.description.toLowerCase().includes(search.toLowerCase()) ||
+        (typeof product.category === 'object' && product.category !== null 
+          ? (product.category as { name: string }).name.toLowerCase().includes(search.toLowerCase())
+          : product.category.toLowerCase().includes(search.toLowerCase()))
+      )
+    : allProducts;
+  
+  // Client-side pagination
+  const itemsPerPage = 12;
+  const totalItems = filteredProducts.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const products = filteredProducts.slice(startIndex, endIndex);
+  
+  const pagination = {
+    currentPage: page,
+    totalPages,
+    totalItems,
+    itemsPerPage
+  };
   
   console.log('CategoryPage - Extracted products:', products);
   console.log('CategoryPage - Extracted pagination:', pagination);

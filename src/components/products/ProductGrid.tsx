@@ -2,6 +2,8 @@ import React from 'react';
 import { Product } from '@/types';
 import { ProductCard } from './ProductCard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { Button } from '@/components/ui/Button';
 
 interface ProductGridProps {
   products: Product[];
@@ -46,13 +48,14 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
     return (
       <div className="space-y-4">
         {products.map((product) => (
-          <div key={product.id} className="product-card">
+          <div key={product.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-soft overflow-hidden">
             <div className="flex">
               <div className="w-32 h-32 flex-shrink-0">
-                <img
+                <OptimizedImage
                   src={product.imageUrl}
                   alt={product.name}
-                  className="w-full h-full object-cover rounded-l-2xl"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <div className="flex-1 p-6">
@@ -69,14 +72,30 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                         ${product.price.toFixed(2)}
                       </span>
                       <span className="text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-lg">
-                        {product.category}
+                        {typeof product.category === 'object' && product.category !== null 
+                          ? (product.category as { name: string }).name 
+                          : product.category}
                       </span>
+                      {product.status === 'sold_out' && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-gray-500 text-white">
+                          Sold Out
+                        </span>
+                      )}
+                      {product.quantity <= 5 && product.status !== 'sold_out' && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-500 text-white">
+                          Low Stock
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="ml-4">
-                    <button className="btn-primary px-4 py-2">
-                      Add to Cart
-                    </button>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      disabled={product.status === 'sold_out' || product.quantity === 0}
+                    >
+                      {product.status === 'sold_out' ? 'Sold Out' : 'Add to Cart'}
+                    </Button>
                   </div>
                 </div>
               </div>

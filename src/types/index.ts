@@ -218,6 +218,7 @@ export interface ProductQueryParams {
   page?: number;
   limit?: number;
   search?: string;
+  q?: string; // Query parameter for search
   category?: string;
 }
 

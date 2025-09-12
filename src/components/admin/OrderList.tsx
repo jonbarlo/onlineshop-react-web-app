@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,7 +6,9 @@ import {
   Eye, 
   Edit,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { OrderStatus } from '@/types';
@@ -16,11 +18,16 @@ import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 
+type SortField = 'orderNumber' | 'customerName' | 'status' | 'totalAmount' | 'createdAt';
+type SortDirection = 'asc' | 'desc';
+
 export const OrderList: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const { data, isLoading, error } = useQuery(
     ['admin-orders', page, search, statusFilter],
@@ -35,8 +42,68 @@ export const OrderList: React.FC = () => {
     }
   );
 
-  const orders = data?.data || [];
+  const allOrders = data?.data || [];
   const pagination = data?.pagination;
+
+  // Client-side sorting
+  const orders = useMemo(() => {
+    const sorted = [...allOrders].sort((a, b) => {
+      let aValue: any = a[sortField];
+      let bValue: any = b[sortField];
+
+      // Handle different data types
+      if (sortField === 'totalAmount') {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      } else if (sortField === 'createdAt') {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      } else {
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [allOrders, sortField, sortDirection]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronUp className="h-4 w-4 opacity-30" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="h-4 w-4 text-primary-600" /> : 
+      <ChevronDown className="h-4 w-4 text-primary-600" />;
+  };
+
+  // Calculate total amount from order items if totalAmount is 0 or missing
+  const calculateOrderTotal = (order: any) => {
+    if (order.totalAmount && order.totalAmount > 0) {
+      return order.totalAmount;
+    }
+    
+    // Calculate from items if totalAmount is 0 or missing
+    if (order.items && Array.isArray(order.items)) {
+      return order.items.reduce((total: number, item: any) => {
+        return total + (item.quantity * item.unitPrice);
+      }, 0);
+    }
+    
+    return 0;
+  };
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -115,6 +182,32 @@ export const OrderList: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Order Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm font-medium text-secondary-600">Total Orders</div>
+            <div className="text-2xl font-bold text-secondary-900">{allOrders.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm font-medium text-secondary-600">Total Revenue</div>
+            <div className="text-2xl font-bold text-secondary-900">
+              ${allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0).toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm font-medium text-secondary-600">Average Order Value</div>
+            <div className="text-2xl font-bold text-secondary-900">
+              ${allOrders.length > 0 ? (allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0) / allOrders.length).toFixed(2) : '0.00'}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Orders Table */}
       <Card>
         <CardHeader>
@@ -126,20 +219,60 @@ export const OrderList: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-secondary-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                      Order
+                    <th 
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-secondary-100 select-none ${
+                        sortField === 'orderNumber' ? 'text-primary-600 bg-primary-50' : 'text-secondary-500'
+                      }`}
+                      onClick={() => handleSort('orderNumber')}
+                    >
+                      <div className="flex items-center space-x-1 group">
+                        <span className="group-hover:text-primary-600">Order</span>
+                        {getSortIcon('orderNumber')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                      Customer
+                    <th 
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-secondary-100 select-none ${
+                        sortField === 'customerName' ? 'text-primary-600 bg-primary-50' : 'text-secondary-500'
+                      }`}
+                      onClick={() => handleSort('customerName')}
+                    >
+                      <div className="flex items-center space-x-1 group">
+                        <span className="group-hover:text-primary-600">Customer</span>
+                        {getSortIcon('customerName')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                      Status
+                    <th 
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-secondary-100 select-none ${
+                        sortField === 'status' ? 'text-primary-600 bg-primary-50' : 'text-secondary-500'
+                      }`}
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center space-x-1 group">
+                        <span className="group-hover:text-primary-600">Status</span>
+                        {getSortIcon('status')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                      Total
+                    <th 
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-secondary-100 select-none ${
+                        sortField === 'totalAmount' ? 'text-primary-600 bg-primary-50' : 'text-secondary-500'
+                      }`}
+                      onClick={() => handleSort('totalAmount')}
+                    >
+                      <div className="flex items-center space-x-1 group">
+                        <span className="group-hover:text-primary-600">Total</span>
+                        {getSortIcon('totalAmount')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                      Date
+                    <th 
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-secondary-100 select-none ${
+                        sortField === 'createdAt' ? 'text-primary-600 bg-primary-50' : 'text-secondary-500'
+                      }`}
+                      onClick={() => handleSort('createdAt')}
+                    >
+                      <div className="flex items-center space-x-1 group">
+                        <span className="group-hover:text-primary-600">Date</span>
+                        {getSortIcon('createdAt')}
+                      </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                       Actions
@@ -174,7 +307,7 @@ export const OrderList: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">
-                        ${order.totalAmount.toFixed(2)}
+                        ${calculateOrderTotal(order).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                         {formatDate(order.createdAt)}

@@ -6,6 +6,7 @@ import { CategoryPage } from '@/pages/CategoryPage';
 import { Cart } from '@/pages/Cart';
 import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
+import { AdminOrders } from '@/pages/AdminOrders';
 import { AdminProducts } from '@/pages/AdminProducts';
 import { OrdersList } from '@/pages/OrdersList';
 import { OrderDetail } from '@/pages/OrderDetail';
@@ -37,7 +38,7 @@ function App() {
         }
       >
         <Route index element={<AdminDashboard />} />
-        <Route path="orders" element={<OrdersList />} />
+        <Route path="orders" element={<AdminOrders />} />
         <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="orders/:id/edit" element={<OrderEdit />} />
         <Route path="products" element={<AdminProducts />} />
