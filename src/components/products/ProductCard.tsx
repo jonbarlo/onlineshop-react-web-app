@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Plus, Heart, Star } from 'lucide-react';
 import { Product } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useCartContext } from '@/contexts/CartContext';
 
 interface ProductCardProps {
@@ -42,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/products/${product.id}`} className="block">
         <div className="relative">
           <div className="aspect-square overflow-hidden rounded-t-2xl">
-            <img
+            <OptimizedImage
               src={product.imageUrl}
               alt={product.name}
               className={`w-full h-full object-cover transition-all duration-300 ${
@@ -50,6 +51,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   ? 'grayscale brightness-75 group-hover:brightness-90'
                   : 'group-hover:scale-105'
               }`}
+              loading="lazy"
             />
             
             {/* Sold Out Overlay */}

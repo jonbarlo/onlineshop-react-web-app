@@ -71,6 +71,8 @@ export const ProductList: React.FC = () => {
     },
     {
       keepPreviousData: true,
+      staleTime: 15 * 60 * 1000, // 15 minutes - products don't change often
+      cacheTime: 60 * 60 * 1000, // 1 hour - keep in cache longer
     }
   );
 

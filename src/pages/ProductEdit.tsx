@@ -16,6 +16,9 @@ export const ProductEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  console.log('ProductEdit - URL ID from useParams:', id);
+  console.log('ProductEdit - Current URL:', window.location.href);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -152,9 +155,19 @@ export const ProductEdit: React.FC = () => {
 
   if (error) {
     return (
-      <Alert type="error" title="Failed to load product">
-        Unable to load product details. Please try again later.
-      </Alert>
+      <div className="max-w-2xl mx-auto">
+        <Alert type="error" title="Product not found">
+          The product you're trying to edit doesn't exist or has been removed.
+          <br />
+          <br />
+          Available products: 1, 2, 3, 4
+        </Alert>
+        <div className="mt-6">
+          <Button onClick={() => navigate('/admin/products')}>
+            Back to Products
+          </Button>
+        </div>
+      </div>
     );
   }
 

@@ -8,11 +8,18 @@ param(
 Write-Host "Online Shop ReactJS Web App - IIS Deployment" -ForegroundColor Green
 Write-Host "=============================================" -ForegroundColor Green
 
-# Check if dist folder exists
+# Check if dist folder exists, if not build it
 if (-not (Test-Path "dist")) {
-    Write-Host "Error: dist folder not found!" -ForegroundColor Red
-    Write-Host "Please run 'npm run build' first to build the application." -ForegroundColor Yellow
-    exit 1
+    Write-Host "dist folder not found. Building application..." -ForegroundColor Yellow
+    Write-Host "Building with production environment variables..." -ForegroundColor Cyan
+    
+    # Build the application
+    npm run build
+    
+    if (-not (Test-Path "dist")) {
+        Write-Host "Error: Build failed! dist folder still not found." -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Load environment variables
@@ -172,9 +179,17 @@ if (Test-Path "web.config") {
     Write-Host "Consider creating a web.config file for IIS SPA support" -ForegroundColor Yellow
 }
 
-# Upload production environment file as .env
-Upload-File -LocalPath ".env.production" -RemotePath ".env"
-Write-Host "Uploaded: .env.production as .env" -ForegroundColor Green
+# Upload environment file as .env
+if (Test-Path ".env") {
+    $envUploadResult = Upload-File -LocalPath ".env" -RemotePath ".env"
+    if ($envUploadResult) {
+        Write-Host "Uploaded: .env as .env" -ForegroundColor Green
+    } else {
+        Write-Host "FAILED to upload .env file!" -ForegroundColor Red
+    }
+} else {
+    Write-Host "ERROR: .env file not found!" -ForegroundColor Red
+}
 
 $endTime = Get-Date
 $duration = $endTime - $startTime

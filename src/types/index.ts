@@ -4,6 +4,56 @@ export interface AppConfig {
   siteDescription: string;
 }
 
+// Dashboard Types
+export interface DashboardStatistics {
+  totalOrders: number;
+  newOrders: number;
+  paidOrders: number;
+  totalRevenue: number;
+  todayRevenue: number;
+  totalProducts: number;
+  activeProducts: number;
+  lowStockProducts: number;
+  totalCustomers: number;
+  repeatCustomers: number;
+}
+
+export interface DashboardPerformance {
+  conversionRate: string;
+  averageOrderValue: string;
+  stockTurnover: string;
+  lowStockAlert: boolean;
+}
+
+export interface DashboardAlerts {
+  lowStock: number;
+  soldOut: number;
+  newOrders: number;
+  readyForDelivery: number;
+}
+
+export interface CategoryStat {
+  id: number;
+  name: string;
+  productCount: number;
+}
+
+export interface DashboardData {
+  statistics: DashboardStatistics;
+  performance: DashboardPerformance;
+  alerts: DashboardAlerts;
+  recentOrders: Order[];
+  recentProducts: Product[];
+  categoryStats: CategoryStat[];
+}
+
+export interface DashboardApiResponse {
+  success: boolean;
+  message: string;
+  data: DashboardData;
+  timestamp: string;
+}
+
 // API Response Types
 export interface ApiResponse<T = unknown> {
   success: boolean;

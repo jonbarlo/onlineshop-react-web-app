@@ -177,6 +177,7 @@ class FTPDeployManager {
       }
     }
 
+
     // Run TypeScript compilation and Vite build
     try {
       this.log('🔄 Building project...', 'info');
@@ -194,6 +195,8 @@ class FTPDeployManager {
       }
 
       this.log('✅ Project built successfully', 'success');
+      
+      
       return true;
     } catch (error: any) {
       this.log(`❌ Build failed: ${error.message}`, 'error');
@@ -203,6 +206,8 @@ class FTPDeployManager {
       if (error.stderr) {
         this.log(`Error: ${error.stderr}`, 'error');
       }
+      
+      
       return false;
     }
   }
@@ -338,14 +343,19 @@ class FTPDeployManager {
         this.log('Consider creating a web.config file for IIS SPA support', 'warning');
       }
 
-      // Upload production environment file as .env
-      const envProductionPath = join(this.projectRoot, '.env.production');
-      this.log('📤 Uploading .env.production as .env...', 'info');
-      const envSuccess = await this.uploadFile(client, envProductionPath, '.env');
+      // Upload environment file as .env
+      const envPath = join(this.projectRoot, '.env');
+      if (!existsSync(envPath)) {
+        this.log('❌ .env file not found!', 'error');
+        return false;
+      }
+      
+      this.log('📤 Uploading .env as .env...', 'info');
+      const envSuccess = await this.uploadFile(client, envPath, '.env');
       if (envSuccess) {
-        this.log('✅ Uploaded: .env.production as .env', 'success');
+        this.log('✅ Uploaded: .env as .env', 'success');
       } else {
-        this.log('❌ Failed to upload .env.production', 'error');
+        this.log('❌ FAILED to upload .env file!', 'error');
         return false;
       }
 

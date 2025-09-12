@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export const AdminProducts: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +27,9 @@ export const AdminProducts: React.FC = () => {
   );
 
   const products = data?.data || [];
+  
+  console.log('AdminProducts - All products:', products);
+  console.log('AdminProducts - Product IDs:', products.map(p => p.id));
 
   const deleteProductMutation = useMutation(
     (productId: number) => apiService.deleteProduct(productId),
@@ -100,10 +104,11 @@ export const AdminProducts: React.FC = () => {
         {products.map((product) => (
           <Card key={product.id} className="overflow-hidden">
             <div className="aspect-square overflow-hidden relative">
-              <img
+              <OptimizedImage
                 src={product.imageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
               {/* Status Badge */}
               <div className="absolute top-2 right-2">
@@ -195,7 +200,10 @@ export const AdminProducts: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/admin/products/${product.id}/edit`)}
+                    onClick={() => {
+                      console.log('Navigating to edit product:', product.id);
+                      navigate(`/admin/products/${product.id}/edit`);
+                    }}
                     className="flex-1"
                   >
                     <Edit className="h-4 w-4 mr-1" />

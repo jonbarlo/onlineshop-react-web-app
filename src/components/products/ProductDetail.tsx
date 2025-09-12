@@ -6,6 +6,7 @@ import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useCartContext } from '@/contexts/CartContext';
 
 export const ProductDetail: React.FC = () => {
@@ -77,12 +78,13 @@ export const ProductDetail: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Product Image */}
         <div className="aspect-square overflow-hidden rounded-lg relative">
-          <img
+          <OptimizedImage
             src={product.imageUrl}
             alt={product.name}
             className={`w-full h-full object-cover transition-all duration-300 ${
               product.status === 'sold_out' ? 'grayscale brightness-75' : ''
             }`}
+            loading="eager"
           />
           {product.status === 'sold_out' && (
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent flex items-center justify-center">

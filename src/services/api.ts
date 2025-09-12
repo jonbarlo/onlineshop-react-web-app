@@ -8,7 +8,7 @@ import {
   CreateProductRequest,
   UpdateProductRequest,
   UpdateOrderStatusRequest,
-  DashboardStats,
+  DashboardApiResponse,
   ProductQueryParams,
   OrderQueryParams,
   PaginatedResponse,
@@ -181,7 +181,7 @@ class ApiService {
   }
 
   // Dashboard
-  async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+  async getDashboardStats(): Promise<DashboardApiResponse> {
     const response = await this.api.get('/api/admin/dashboard');
     return response.data;
   }
