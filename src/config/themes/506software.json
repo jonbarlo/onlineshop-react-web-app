@@ -1,0 +1,41 @@
+{
+  "name": "506software",
+  "displayName": "Shop 506",
+  "description": "Online Store",
+  "version": "1.0.0",
+  "colors": {
+    "primary": "#3B82F6",
+    "primaryDark": "#1E40AF",
+    "secondary": "#6B7280",
+    "secondaryDark": "#374151",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "error": "#EF4444",
+    "background": "#FFFFFF",
+    "backgroundDark": "#111827",
+    "surface": "#F9FAFB",
+    "surfaceDark": "#1F2937",
+    "text": "#111827",
+    "textDark": "#F9FAFB",
+    "textSecondary": "#6B7280",
+    "textSecondaryDark": "#9CA3AF",
+    "border": "#E5E7EB",
+    "borderDark": "#374151"
+  },
+  "branding": {
+    "logo": "/logo-506.png",
+    "favicon": "/favicon-506.ico",
+    "companyName": "506 Software",
+    "siteName": "Shop 506",
+    "siteDescription": "Online Store"
+  },
+  "api": {
+    "baseUrl": "https://api.shop.506software.com"
+  },
+  "content": {
+    "welcomeMessage": "Welcome to Shop 506",
+    "footerText": "© 2024 506 Software. All rights reserved.",
+    "contactEmail": "contact@506software.com",
+    "supportEmail": "support@506software.com"
+  }
+}

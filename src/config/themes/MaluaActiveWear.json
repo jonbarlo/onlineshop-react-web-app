@@ -1,0 +1,41 @@
+{
+  "name": "MaluaActiveWear",
+  "displayName": "Malua",
+  "description": "Active Wear & Wellness",
+  "version": "1.0.0",
+  "colors": {
+    "primary": "#F8BBD9",
+    "primaryDark": "#E91E63",
+    "secondary": "#9E9E9E",
+    "secondaryDark": "#424242",
+    "success": "#4CAF50",
+    "warning": "#FF9800",
+    "error": "#F44336",
+    "background": "#F5F5F5",
+    "backgroundDark": "#212121",
+    "surface": "#FFFFFF",
+    "surfaceDark": "#303030",
+    "text": "#424242",
+    "textDark": "#F5F5F5",
+    "textSecondary": "#9E9E9E",
+    "textSecondaryDark": "#BDBDBD",
+    "border": "#E0E0E0",
+    "borderDark": "#424242"
+  },
+  "branding": {
+    "logo": "/logo-malua.png",
+    "favicon": "/favicon-malua.ico",
+    "companyName": "Malua Active Wear",
+    "siteName": "Malua",
+    "siteDescription": "Yoga • Brunch • Girls - Active Wear & Wellness"
+  },
+  "api": {
+    "baseUrl": "https://api.malua-activewear.com"
+  },
+  "content": {
+    "welcomeMessage": "Welcome to Malua - Your Active Lifestyle Destination",
+    "footerText": "© 2024 Malua Active Wear. All rights reserved.",
+    "contactEmail": "hello@malua-activewear.com",
+    "supportEmail": "support@malua-activewear.com"
+  }
+}

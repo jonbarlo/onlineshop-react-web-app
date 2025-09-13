@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
-import { appConfig } from '@/config/app';
+import { useBrandTheme } from '@/contexts/ThemeContext';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuthContext();
   const { cart } = useCartContext();
+  const { theme } = useBrandTheme();
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -21,12 +22,24 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-soft group-hover:shadow-medium transition-shadow duration-200">
+              <div 
+                className="h-10 w-10 rounded-xl flex items-center justify-center shadow-soft group-hover:shadow-medium transition-shadow duration-200"
+                style={{
+                  backgroundImage: `linear-gradient(to bottom right, ${theme?.colors.primary}, ${theme?.colors.primaryDark})`
+                }}
+              >
                 <Package className="h-6 w-6 text-white" />
               </div>
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors duration-200">
-              {appConfig.siteName}
+            <span 
+              className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              style={{
+                '--hover-color': theme?.colors.primary
+              } as React.CSSProperties}
+              onMouseEnter={(e) => e.currentTarget.style.color = theme?.colors.primary || ''}
+              onMouseLeave={(e) => e.currentTarget.style.color = ''}
+            >
+              {theme?.branding.siteName}
             </span>
           </Link>
 
@@ -53,7 +66,10 @@ export const Header: React.FC = () => {
               >
                 <ShoppingCart className="h-5 w-5" />
                 {cart.totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-brand-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-scale-in">
+                  <span 
+                    className="absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-scale-in"
+                    style={{ backgroundColor: theme?.colors.primary }}
+                  >
                     {cart.totalItems}
                   </span>
                 )}

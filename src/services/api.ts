@@ -22,9 +22,10 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    console.log('All environment variables:', import.meta.env);
-    console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-    const baseURL = import.meta.env.VITE_API_BASE_URL;
+    // Try to get API URL from theme first, then fall back to environment variable
+    const themeApiUrl = import.meta.env.VITE_THEME_API_URL;
+    const envApiUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseURL = themeApiUrl || envApiUrl;
     console.log('API Base URL:', baseURL);
     
     this.api = axios.create({
@@ -142,7 +143,7 @@ class ApiService {
     } catch (error: unknown) {
       console.log(`Endpoint ${endpoint} failed:`, error);
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: any; status?: number } };
+        const axiosError = error as { response?: { data?: unknown; status?: number } };
         console.log('Backend error response:', axiosError.response?.data);
         console.log('Backend error status:', axiosError.response?.status);
       }

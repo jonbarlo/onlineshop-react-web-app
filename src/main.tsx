@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { CartProvider } from './contexts/CartContext'
 import { AuthProvider } from './contexts/AuthContext'
-import { ThemeProvider } from './contexts/ThemeContext'
+import { BrandThemeProvider } from './contexts/ThemeContext'
 import App from './App.tsx'
 import './index.css'
 
@@ -25,13 +25,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ThemeProvider>
+        <BrandThemeProvider>
           <AuthProvider>
             <CartProvider>
               <App />
             </CartProvider>
           </AuthProvider>
-        </ThemeProvider>
+        </BrandThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>,

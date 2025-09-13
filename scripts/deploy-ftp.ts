@@ -171,13 +171,11 @@ class FTPDeployManager {
     // Temporarily move .env.local out of the way for production builds
     const envLocalPath = join(this.projectRoot, '.env.local');
     const envLocalBackupPath = join(this.projectRoot, '.env.local.backup');
-    let envLocalMoved = false;
 
     if (existsSync(envLocalPath)) {
       this.log('🔄 Temporarily moving .env.local to prevent override of production settings...', 'info');
       try {
         execSync(`move "${envLocalPath}" "${envLocalBackupPath}"`, { cwd: this.projectRoot, stdio: 'pipe' });
-        envLocalMoved = true;
         this.log('✅ .env.local temporarily moved', 'success');
       } catch (error) {
         this.log('⚠️  Could not move .env.local, continuing with build...', 'warning');
