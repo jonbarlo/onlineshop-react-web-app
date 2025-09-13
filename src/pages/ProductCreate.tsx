@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient, useQuery } from 'react-query';
 import { useForm } from 'react-hook-form';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { apiService } from '@/services/api';
@@ -10,7 +10,7 @@ import { FormInput } from '@/components/ui/FormInput';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { CreateProductRequest } from '@/types';
+import { CreateProductRequest, Category } from '@/types';
 
 export const ProductCreate: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +18,15 @@ export const ProductCreate: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+
+  // Fetch categories from database
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
+    ['categories'],
+    () => apiService.getCategories(),
+    { keepPreviousData: true, staleTime: 15 * 60 * 1000 }
+  );
+
+  const categories = categoriesData?.data || [];
 
   const {
     register,
@@ -147,20 +156,23 @@ export const ProductCreate: React.FC = () => {
                   <label className="block text-sm font-medium text-secondary-700 mb-2">
                     Category *
                   </label>
-                  <select
-                    {...register('category', { required: 'Category is required' })}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">Select a category</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="home">Home & Garden</option>
-                    <option value="sports">Sports</option>
-                    <option value="books">Books</option>
-                    <option value="automotive">Automotive</option>
-                    <option value="health">Health & Beauty</option>
-                    <option value="baby">Baby & Kids</option>
-                  </select>
+                  {categoriesLoading ? (
+                    <div className="w-full px-3 py-2 border border-secondary-300 rounded-md bg-gray-50 animate-pulse">
+                      Loading categories...
+                    </div>
+                  ) : (
+                    <select
+                      {...register('category', { required: 'Category is required' })}
+                      className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((category: Category) => (
+                        <option key={category._id} value={category.slug}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   {errors.category && (
                     <p className="mt-1 text-sm text-error-600">{errors.category.message}</p>
                   )}

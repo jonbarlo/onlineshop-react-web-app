@@ -15,14 +15,20 @@ import {
   AlertTriangle,
   TrendingUp,
   BarChart3,
+  Tag,
 } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { formatCurrency } from '@/config/app';
 
 export const Dashboard: React.FC = () => {
+  // Set page title
+  useDocumentTitle('Admin Dashboard');
+
   const { data, isLoading, error } = useQuery(
     'dashboard',
     () => apiService.getDashboardStats(),
@@ -227,7 +233,7 @@ export const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-success-600">
-              ${(statistics.totalRevenue || 0).toFixed(2)}
+              {formatCurrency(statistics.totalRevenue || 0)}
             </div>
             <p className="text-sm text-secondary-600 mt-1">
               All-time revenue from orders
@@ -244,7 +250,7 @@ export const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary-600">
-              ${(statistics.todayRevenue || 0).toFixed(2)}
+              {formatCurrency(statistics.todayRevenue || 0)}
             </div>
             <p className="text-sm text-secondary-600 mt-1">
               Revenue generated today
@@ -357,7 +363,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-secondary-900">
-                          ${(order.totalAmount || 0).toFixed(2)}
+                          {formatCurrency(order.totalAmount || 0)}
                         </p>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -400,7 +406,7 @@ export const Dashboard: React.FC = () => {
                             {product.name || `Product ID ${product.id}`}
                           </p>
                           <p className="text-sm text-secondary-600">
-                            ${product.price ? product.price.toFixed(2) : '0.00'}
+                            {product.price ? formatCurrency(product.price) : formatCurrency(0)}
                           </p>
                         </div>
                         <div className="text-right">
@@ -435,7 +441,7 @@ export const Dashboard: React.FC = () => {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/admin/orders">
               <div className="p-4 border rounded-lg hover:bg-secondary-50 transition-colors">
                 <div className="flex items-center space-x-3">
@@ -454,6 +460,17 @@ export const Dashboard: React.FC = () => {
                   <div>
                     <h3 className="font-medium text-secondary-900">Manage Products</h3>
                     <p className="text-sm text-secondary-500">Edit product catalog</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <Link to="/admin/categories">
+              <div className="p-4 border rounded-lg hover:bg-secondary-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <Tag className="h-8 w-8 text-blue-600" />
+                  <div>
+                    <h3 className="font-medium text-secondary-900">Manage Categories</h3>
+                    <p className="text-sm text-secondary-500">Organize product categories</p>
                   </div>
                 </div>
               </div>

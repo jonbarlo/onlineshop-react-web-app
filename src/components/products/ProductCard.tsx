@@ -5,6 +5,7 @@ import { Product } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useCartContext } from '@/contexts/CartContext';
+import { formatCurrency } from '@/config/app';
 
 interface ProductCardProps {
   product: Product;
@@ -124,10 +125,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-baseline space-x-1">
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${product.price.toFixed(2)}
+                {formatCurrency(product.price)}
               </span>
               <span className="text-sm text-gray-500 line-through">
-                ${(product.price * 1.2).toFixed(2)}
+                {formatCurrency(product.price * 1.2)}
               </span>
             </div>
             <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-lg font-medium">

@@ -8,12 +8,16 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { Alert } from '@/components/ui/Alert';
 import { LoginForm as LoginFormType } from '@/types';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuthContext();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Set page title
+  useDocumentTitle('Admin Login');
 
   const {
     register,

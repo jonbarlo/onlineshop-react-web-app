@@ -16,6 +16,9 @@ import {
   ProductsApiResponse,
   ImageUploadResponse,
   ImageDeleteResponse,
+  Category,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
 } from '@/types';
 
 class ApiService {
@@ -204,6 +207,35 @@ class ApiService {
 
   async deleteProductImage(filename: string): Promise<ImageDeleteResponse> {
     const response = await this.api.delete(`/api/upload/product-image/${filename}`);
+    return response.data;
+  }
+
+  // Category Management Methods
+  async getCategories(): Promise<{ success: boolean; data: Category[]; message: string }> {
+    console.log('API Request: GET /api/admin/categories');
+    const response = await this.api.get('/api/admin/categories');
+    console.log('API Response: /api/admin/categories', response.status, response.data);
+    return response.data;
+  }
+
+  async createCategory(categoryData: CreateCategoryRequest): Promise<{ success: boolean; data: Category; message: string }> {
+    console.log('API Request: POST /api/admin/categories', categoryData);
+    const response = await this.api.post('/api/admin/categories', categoryData);
+    console.log('API Response: /api/admin/categories', response.status, response.data);
+    return response.data;
+  }
+
+  async updateCategory(id: string, categoryData: UpdateCategoryRequest): Promise<{ success: boolean; data: Category; message: string }> {
+    console.log(`API Request: PUT /api/admin/categories/${id}`, categoryData);
+    const response = await this.api.put(`/api/admin/categories/${id}`, categoryData);
+    console.log(`API Response: /api/admin/categories/${id}`, response.status, response.data);
+    return response.data;
+  }
+
+  async deleteCategory(id: string): Promise<{ success: boolean; message: string }> {
+    console.log(`API Request: DELETE /api/admin/categories/${id}`);
+    const response = await this.api.delete(`/api/admin/categories/${id}`);
+    console.log(`API Response: /api/admin/categories/${id}`, response.status, response.data);
     return response.data;
   }
 }

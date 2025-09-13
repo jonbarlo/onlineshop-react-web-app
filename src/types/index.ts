@@ -2,6 +2,8 @@
 export interface AppConfig {
   siteName: string;
   siteDescription: string;
+  currency: string;
+  currencySymbol: string;
 }
 
 // Dashboard Types
@@ -138,6 +140,36 @@ export interface Product {
   status: 'available' | 'sold_out';
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  description?: string;
+  slug: string;
+  image?: string;
+  isActive: boolean;
+  sortOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string;
+  slug?: string;
+  image?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface UpdateCategoryRequest {
+  name?: string;
+  description?: string;
+  slug?: string;
+  image?: string;
+  isActive?: boolean;
+  sortOrder?: number;
 }
 
 export interface CreateProductRequest {

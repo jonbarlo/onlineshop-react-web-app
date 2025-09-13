@@ -10,7 +10,7 @@ import { FormInput } from '@/components/ui/FormInput';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { UpdateProductRequest } from '@/types';
+import { UpdateProductRequest, Category } from '@/types';
 
 export const ProductEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +22,15 @@ export const ProductEdit: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+
+  // Fetch categories from database
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
+    ['categories'],
+    () => apiService.getCategories(),
+    { keepPreviousData: true, staleTime: 15 * 60 * 1000 }
+  );
+
+  const categories = categoriesData?.data || [];
 
   const { data, isLoading, error } = useQuery(
     ['admin-product', id],
@@ -264,33 +273,26 @@ export const ProductEdit: React.FC = () => {
                         (Current: {typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).name : watchedValues.category})
                       </span>
                     )}
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        console.log('Manual test - setting category to sports');
-                        setValue('category', 'sports');
-                      }}
-                      className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded"
-                    >
-                      Test Set Sports
-                    </button>
                   </label>
-                  <select
-                    value={typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).slug || '' : watchedValues.category || ''}
-                    onChange={(e) => setValue('category', e.target.value)}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Select a category</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="home-garden">Home & Garden</option>
-                    <option value="sports-outdoors">Sports & Outdoors</option>
-                    <option value="books">Books</option>
-                    <option value="automotive">Automotive</option>
-                    <option value="health-beauty">Health & Beauty</option>
-                    <option value="baby-kids">Baby & Kids</option>
-                  </select>
+                  {categoriesLoading ? (
+                    <div className="w-full px-3 py-2 border border-secondary-300 rounded-md bg-gray-50 animate-pulse">
+                      Loading categories...
+                    </div>
+                  ) : (
+                    <select
+                      value={typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).slug || '' : watchedValues.category || ''}
+                      onChange={(e) => setValue('category', e.target.value)}
+                      className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((category: Category) => (
+                        <option key={category._id} value={category.slug}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   {!watchedValues.category && (
                     <p className="mt-1 text-sm text-error-600">Category is required</p>
                   )}

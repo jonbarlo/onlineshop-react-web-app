@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useCartContext } from '@/contexts/CartContext';
+import { formatCurrency } from '@/config/app';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -105,7 +106,7 @@ export const ProductDetail: React.FC = () => {
               {product.name}
             </h1>
             <p className="text-2xl font-bold text-primary-600">
-              ${product.price.toFixed(2)}
+              {formatCurrency(product.price)}
             </p>
             
             {/* Stock Status */}

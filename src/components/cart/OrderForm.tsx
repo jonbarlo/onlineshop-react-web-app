@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { X, CheckCircle } from 'lucide-react';
 import { useCartContext } from '@/contexts/CartContext';
+import { formatCurrency } from '@/config/app';
 import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -165,12 +166,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
                         <span className="ml-2 text-xs text-orange-600 font-medium">(Insufficient Stock)</span>
                       )}
                     </div>
-                    <span>${(item.product.price * item.quantity).toFixed(2)}</span>
+                    <span>{formatCurrency(item.product.price * item.quantity)}</span>
                   </div>
                 ))}
                 <div className="border-t pt-2 font-semibold flex justify-between">
                   <span>Total</span>
-                  <span>${cart.totalAmount.toFixed(2)}</span>
+                  <span>{formatCurrency(cart.totalAmount)}</span>
                 </div>
               </div>
             </div>

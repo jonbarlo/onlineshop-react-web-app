@@ -14,6 +14,7 @@ import {
   Package
 } from 'lucide-react';
 import { apiService } from '@/services/api';
+import { formatCurrency } from '@/config/app';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -221,12 +222,12 @@ export const OrderDetail: React.FC = () => {
                         Quantity: {item.quantity}
                       </p>
                       <p className="text-sm text-secondary-500">
-                        Unit Price: ${item.unitPrice.toFixed(2)}
+                        Unit Price: {formatCurrency(item.unitPrice)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-secondary-900">
-                        ${(item.unitPrice * item.quantity).toFixed(2)}
+                        {formatCurrency(item.unitPrice * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -244,7 +245,7 @@ export const OrderDetail: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${order.totalAmount.toFixed(2)}</span>
+                  <span>{formatCurrency(order.totalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
@@ -253,7 +254,7 @@ export const OrderDetail: React.FC = () => {
                 <div className="border-t pt-2">
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>${order.totalAmount.toFixed(2)}</span>
+                    <span>{formatCurrency(order.totalAmount)}</span>
                   </div>
                 </div>
               </div>

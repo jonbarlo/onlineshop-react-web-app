@@ -10,8 +10,13 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { formatCurrency } from '@/config/app';
 
 export const AdminProducts: React.FC = () => {
+  // Set page title
+  useDocumentTitle('Admin Products');
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -163,7 +168,7 @@ export const AdminProducts: React.FC = () => {
                   {/* Price */}
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-primary-600">
-                      ${product.price.toFixed(2)}
+                      {formatCurrency(product.price)}
                     </span>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
@@ -260,7 +265,7 @@ export const AdminProducts: React.FC = () => {
                       </p>
                       <div className="flex items-center space-x-4 mb-3">
                         <span className="text-xl font-bold text-primary-600">
-                          ${product.price.toFixed(2)}
+                          {formatCurrency(product.price)}
                         </span>
                         <span className={`text-sm px-2 py-1 rounded ${
                           product.status === 'sold_out'

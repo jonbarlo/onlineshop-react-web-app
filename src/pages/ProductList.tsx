@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // Unused since hiding categories section
 import { 
-  Smartphone, 
-  Shirt, 
-  Home, 
-  Gamepad2, 
+  // Smartphone, 
+  // Shirt, 
+  // Home, 
+  // Gamepad2, 
   ArrowRight,
   Star,
   Truck,
@@ -14,7 +14,8 @@ import {
   Grid,
   List,
   Search,
-  Heart
+  Heart,
+  // Package
 } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { ProductGrid } from '@/components/products/ProductGrid';
@@ -23,56 +24,43 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useBrandTheme } from '@/contexts/ThemeContext';
 
-interface Category {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  href: string;
-  description: string;
-  color: string;
-}
+// Import the Category type from types - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
+// import { Category as DbCategory } from '@/types';
 
-const categories: Category[] = [
-  { 
-    id: 'electronics', 
-    name: 'Electronics', 
-    icon: Smartphone, 
-    href: '/category/electronics',
-    description: 'Latest gadgets and tech',
-    color: 'from-blue-500 to-purple-600'
-  },
-  { 
-    id: 'clothing', 
-    name: 'Clothing', 
-    icon: Shirt, 
-    href: '/category/clothing',
-    description: 'Fashion for everyone',
-    color: 'from-pink-500 to-rose-600'
-  },
-  { 
-    id: 'home', 
-    name: 'Home & Garden', 
-    icon: Home, 
-    href: '/category/home',
-    description: 'Make your house a home',
-    color: 'from-green-500 to-emerald-600'
-  },
-  { 
-    id: 'sports', 
-    name: 'Sports', 
-    icon: Gamepad2, 
-    href: '/category/sports',
-    description: 'Gear up for adventure',
-    color: 'from-orange-500 to-red-600'
-  },
-];
+// Icon mapping for categories - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
+// const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+//   'electronics': Smartphone,
+//   'clothing': Shirt,
+//   'home': Home,
+//   'sports': Gamepad2,
+//   'default': Package, // fallback icon
+// };
+
+// Color mapping for categories - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
+// const categoryColors: Record<string, string> = {
+//   'electronics': 'from-blue-500 to-purple-600',
+//   'clothing': 'from-pink-500 to-rose-600', 
+//   'home': 'from-green-500 to-emerald-600',
+//   'sports': 'from-orange-500 to-red-600',
+//   'default': 'from-gray-500 to-gray-600',
+// };
 
 export const ProductList: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
   const { theme } = useBrandTheme();
   
-  
+  // Fetch categories from database - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
+  // const { data: categoriesData } = useQuery(
+  //   ['categories'],
+  //   () => apiService.getCategories(),
+  //   {
+  //     keepPreviousData: true,
+  //     staleTime: 15 * 60 * 1000, // 15 minutes
+  //   }
+  // );
+
+  // Fetch products
   const { data, isLoading, error } = useQuery(
     ['products'],
     () => {
@@ -90,6 +78,18 @@ export const ProductList: React.FC = () => {
 
   // Handle the actual API response structure
   const allProducts = Array.isArray(data?.data) ? data.data : [];
+  
+  // Transform database categories to display format - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
+  // const categories = (categoriesData?.data || [])
+  //   .filter((cat: DbCategory) => cat.isActive === true) // Only show active categories
+  //   .map((cat: DbCategory) => ({
+  //     id: cat._id || cat.slug,
+  //     name: cat.name,
+  //     icon: categoryIcons[cat.slug] || categoryIcons.default,
+  //     href: `/category/${cat.slug}`,
+  //     description: cat.description || `Explore ${cat.name}`,
+  //     color: categoryColors[cat.slug] || categoryColors.default,
+  //   }));
   
   // Client-side filtering
   const products = search 
@@ -268,7 +268,8 @@ export const ProductList: React.FC = () => {
         </section>
       )}
 
-      {/* Categories */}
+      {/* Categories - HIDDEN FOR NOW */}
+      {/* 
       <section>
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Shop by Category</h2>
@@ -302,6 +303,7 @@ export const ProductList: React.FC = () => {
           })}
         </div>
       </section>
+      */}
 
       {/* Featured Products */}
       <section>

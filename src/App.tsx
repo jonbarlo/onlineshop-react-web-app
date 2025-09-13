@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ProductList } from '@/pages/ProductList';
 import { ProductDetail } from '@/pages/ProductDetail';
 import { CategoryPage } from '@/pages/CategoryPage';
@@ -8,6 +9,7 @@ import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
 import { AdminOrders } from '@/pages/AdminOrders';
 import { AdminProducts } from '@/pages/AdminProducts';
+import { AdminCategories } from '@/pages/AdminCategories';
 import { OrderDetail } from '@/pages/OrderDetail';
 import { OrderEdit } from '@/pages/OrderEdit';
 import { ProductCreate } from '@/pages/ProductCreate';
@@ -32,7 +34,7 @@ function App() {
         path="/admin"
         element={
           <ProtectedRoute>
-            <Layout />
+            <AdminLayout />
           </ProtectedRoute>
         }
       >
@@ -43,6 +45,7 @@ function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="products/new" element={<ProductCreate />} />
         <Route path="products/:id/edit" element={<ProductEdit />} />
+        <Route path="categories" element={<AdminCategories />} />
       </Route>
 
       {/* Catch all route */}

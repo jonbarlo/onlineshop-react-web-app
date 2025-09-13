@@ -18,11 +18,16 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { formatCurrency } from '@/config/app';
 
 type SortField = 'orderNumber' | 'customerName' | 'status' | 'totalAmount' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
 
 export const OrderList: React.FC = () => {
+  // Set page title
+  useDocumentTitle('Admin Orders');
+
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -231,7 +236,7 @@ export const OrderList: React.FC = () => {
           <CardContent className="p-4">
             <div className="text-sm font-medium text-secondary-600">Total Revenue</div>
             <div className="text-2xl font-bold text-secondary-900">
-              ${allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0).toFixed(2)}
+              {formatCurrency(allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0))}
             </div>
           </CardContent>
         </Card>
@@ -239,7 +244,7 @@ export const OrderList: React.FC = () => {
           <CardContent className="p-4">
             <div className="text-sm font-medium text-secondary-600">Average Order Value</div>
             <div className="text-2xl font-bold text-secondary-900">
-              ${allOrders.length > 0 ? (allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0) / allOrders.length).toFixed(2) : '0.00'}
+              {allOrders.length > 0 ? formatCurrency(allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0) / allOrders.length) : formatCurrency(0)}
             </div>
           </CardContent>
         </Card>
@@ -344,7 +349,7 @@ export const OrderList: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">
-                        ${calculateOrderTotal(order).toFixed(2)}
+                        {formatCurrency(calculateOrderTotal(order))}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                         {formatDate(order.createdAt)}

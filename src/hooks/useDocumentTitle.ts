@@ -1,8 +1,45 @@
 import { useEffect } from 'react';
-import { getSiteTitle } from '@/config/app';
+import { useBrandTheme } from '@/contexts/ThemeContext';
 
 export const useDocumentTitle = (pageTitle?: string) => {
+  const { theme, loading } = useBrandTheme();
+  
   useEffect(() => {
-    document.title = getSiteTitle(pageTitle);
-  }, [pageTitle]);
+    // Wait for theme to load
+    if (!loading && theme) {
+      const siteName = theme.branding.siteName;
+      const finalTitle = pageTitle ? `${pageTitle} - ${siteName}` : siteName;
+      
+      // Update document title
+      document.title = finalTitle;
+      
+      // Update all meta tags
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', theme.branding.siteDescription || siteName);
+      }
+      
+      // Update Open Graph tags
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', finalTitle);
+      }
+      
+      const ogDescription = document.querySelector('meta[property="og:description"]');
+      if (ogDescription) {
+        ogDescription.setAttribute('content', theme.branding.siteDescription || siteName);
+      }
+      
+      // Update Twitter tags
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twitterTitle) {
+        twitterTitle.setAttribute('content', finalTitle);
+      }
+      
+      const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      if (twitterDescription) {
+        twitterDescription.setAttribute('content', theme.branding.siteDescription || siteName);
+      }
+    }
+  }, [pageTitle, theme, loading]);
 };
