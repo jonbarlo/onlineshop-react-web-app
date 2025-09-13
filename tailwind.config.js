@@ -8,18 +8,57 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Modern Apple-inspired color palette
+        // MALUA ACTIVEWEAR Color Palette - Pink & Gray Theme
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#fdf2f8',   // Light pink
+          100: '#fce7f3',  // Very light pink
+          200: '#fbcfe8',  // Light pink
+          300: '#f9a8d4',  // Medium light pink
+          400: '#f472b6',  // Medium pink
+          500: '#ec4899',  // Base pink
+          600: '#db2777',  // Dark pink
+          700: '#be185d',  // Darker pink
+          800: '#9d174d',  // Very dark pink
+          900: '#831843',  // Darkest pink
+        },
+        // Pink variants for MALUA ACTIVEWEAR
+        pink: {
+          50: '#fdf2f8',
+          100: '#fce7f3',
+          200: '#fbcfe8',
+          300: '#f9a8d4',
+          400: '#f472b6',
+          500: '#ec4899',
+          600: '#db2777',
+          700: '#be185d',
+          800: '#9d174d',
+          900: '#831843',
+        },
+        // Sage green accent
+        sage: {
+          50: '#f6f7f6',
+          100: '#e3e7e3',
+          200: '#c7d2c7',
+          300: '#a3b5a3',
+          400: '#7a8f7a',
+          500: '#5f735f',
+          600: '#4a5a4a',
+          700: '#3d493d',
+          800: '#333c33',
+          900: '#2c332c',
+        },
+        // Terracotta accent
+        terracotta: {
+          50: '#fdf4f0',
+          100: '#fae5d9',
+          200: '#f4c9b0',
+          300: '#eca481',
+          400: '#e17b54',
+          500: '#d65f3a',
+          600: '#c74e2f',
+          700: '#a63e29',
+          800: '#853328',
+          900: '#6d2b24',
         },
         // Neutral grays for better contrast
         gray: {
