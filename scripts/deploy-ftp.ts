@@ -3,7 +3,6 @@
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, statSync, readdirSync } from 'fs';
 import { join, relative } from 'path';
-import { createReadStream, createWriteStream } from 'fs';
 import { Client } from 'basic-ftp';
 
 interface DeployOptions {
@@ -13,14 +12,6 @@ interface DeployOptions {
   dryRun?: boolean;
 }
 
-interface FTPConfig {
-  host: string;
-  user: string;
-  password: string;
-  port?: number;
-  secure?: boolean;
-  remotePath?: string;
-}
 
 interface EnvironmentConfig {
   VITE_API_BASE_URL?: string;
@@ -177,6 +168,21 @@ class FTPDeployManager {
       }
     }
 
+    // Temporarily move .env.local out of the way for production builds
+    const envLocalPath = join(this.projectRoot, '.env.local');
+    const envLocalBackupPath = join(this.projectRoot, '.env.local.backup');
+    let envLocalMoved = false;
+
+    if (existsSync(envLocalPath)) {
+      this.log('🔄 Temporarily moving .env.local to prevent override of production settings...', 'info');
+      try {
+        execSync(`move "${envLocalPath}" "${envLocalBackupPath}"`, { cwd: this.projectRoot, stdio: 'pipe' });
+        envLocalMoved = true;
+        this.log('✅ .env.local temporarily moved', 'success');
+      } catch (error) {
+        this.log('⚠️  Could not move .env.local, continuing with build...', 'warning');
+      }
+    }
 
     // Run TypeScript compilation and Vite build
     try {
@@ -196,7 +202,6 @@ class FTPDeployManager {
 
       this.log('✅ Project built successfully', 'success');
       
-      
       return true;
     } catch (error: any) {
       this.log(`❌ Build failed: ${error.message}`, 'error');
@@ -206,7 +211,6 @@ class FTPDeployManager {
       if (error.stderr) {
         this.log(`Error: ${error.stderr}`, 'error');
       }
-      
       
       return false;
     }
@@ -343,19 +347,19 @@ class FTPDeployManager {
         this.log('Consider creating a web.config file for IIS SPA support', 'warning');
       }
 
-      // Upload environment file as .env
-      const envPath = join(this.projectRoot, '.env');
-      if (!existsSync(envPath)) {
-        this.log('❌ .env file not found!', 'error');
+      // Upload environment file as .env (copy from .env.production)
+      const envProductionPath = join(this.projectRoot, '.env.production');
+      if (!existsSync(envProductionPath)) {
+        this.log('❌ .env.production file not found!', 'error');
         return false;
       }
       
-      this.log('📤 Uploading .env as .env...', 'info');
-      const envSuccess = await this.uploadFile(client, envPath, '.env');
+      this.log('📤 Uploading .env.production as .env...', 'info');
+      const envSuccess = await this.uploadFile(client, envProductionPath, '.env');
       if (envSuccess) {
-        this.log('✅ Uploaded: .env as .env', 'success');
+        this.log('✅ Uploaded: .env.production as .env', 'success');
       } else {
-        this.log('❌ FAILED to upload .env file!', 'error');
+        this.log('❌ FAILED to upload environment file!', 'error');
         return false;
       }
 
@@ -372,6 +376,7 @@ class FTPDeployManager {
 
   public async deploy(): Promise<boolean> {
     const startTime = Date.now();
+    const envLocalBackupPath = join(this.projectRoot, '.env.local.backup');
 
     this.log('🚀 Starting automated FTP deployment process...', 'info');
     this.log(`Environment: ${this.options.environment}`, 'info');
@@ -417,6 +422,17 @@ class FTPDeployManager {
     } catch (error: any) {
       this.log(`❌ Deployment process failed: ${error.message}`, 'error');
       return false;
+    } finally {
+      // Restore .env.local at the very end after everything is complete
+      if (existsSync(envLocalBackupPath)) {
+        this.log('🔄 Restoring .env.local...', 'info');
+        try {
+          execSync(`move "${envLocalBackupPath}" ".env.local"`, { cwd: this.projectRoot, stdio: 'pipe' });
+          this.log('✅ .env.local restored', 'success');
+        } catch (error) {
+          this.log('⚠️  Could not restore .env.local', 'warning');
+        }
+      }
     }
   }
 }

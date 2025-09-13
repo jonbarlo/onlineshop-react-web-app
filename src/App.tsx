@@ -8,7 +8,6 @@ import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
 import { AdminOrders } from '@/pages/AdminOrders';
 import { AdminProducts } from '@/pages/AdminProducts';
-import { OrdersList } from '@/pages/OrdersList';
 import { OrderDetail } from '@/pages/OrderDetail';
 import { OrderEdit } from '@/pages/OrderEdit';
 import { ProductCreate } from '@/pages/ProductCreate';

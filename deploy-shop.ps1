@@ -13,12 +13,38 @@ if (-not (Test-Path "dist")) {
     Write-Host "dist folder not found. Building application..." -ForegroundColor Yellow
     Write-Host "Building with production environment variables..." -ForegroundColor Cyan
     
-    # Build the application
-    npm run build
+    # Temporarily move .env.local out of the way for production builds
+    $envLocalMoved = $false
+    if (Test-Path ".env.local") {
+        Write-Host "Temporarily moving .env.local to prevent override of production settings..." -ForegroundColor Yellow
+        try {
+            Move-Item ".env.local" ".env.local.backup" -Force
+            $envLocalMoved = $true
+            Write-Host ".env.local temporarily moved" -ForegroundColor Green
+        } catch {
+            Write-Host "Could not move .env.local, continuing with build..." -ForegroundColor Yellow
+        }
+    }
     
-    if (-not (Test-Path "dist")) {
-        Write-Host "Error: Build failed! dist folder still not found." -ForegroundColor Red
-        exit 1
+    try {
+        # Build the application
+        npm run build
+        
+        if (-not (Test-Path "dist")) {
+            Write-Host "Error: Build failed! dist folder still not found." -ForegroundColor Red
+            exit 1
+        }
+    } finally {
+        # Restore .env.local if it was moved
+        if ($envLocalMoved -and (Test-Path ".env.local.backup")) {
+            Write-Host "Restoring .env.local..." -ForegroundColor Yellow
+            try {
+                Move-Item ".env.local.backup" ".env.local" -Force
+                Write-Host ".env.local restored" -ForegroundColor Green
+            } catch {
+                Write-Host "Could not restore .env.local" -ForegroundColor Yellow
+            }
+        }
     }
 }
 
@@ -179,16 +205,17 @@ if (Test-Path "web.config") {
     Write-Host "Consider creating a web.config file for IIS SPA support" -ForegroundColor Yellow
 }
 
-# Upload environment file as .env
-if (Test-Path ".env") {
-    $envUploadResult = Upload-File -LocalPath ".env" -RemotePath ".env"
+# Upload environment file as .env (copy from .env.production)
+$envProductionFile = ".env.production"
+if (Test-Path $envProductionFile) {
+    $envUploadResult = Upload-File -LocalPath $envProductionFile -RemotePath ".env"
     if ($envUploadResult) {
-        Write-Host "Uploaded: .env as .env" -ForegroundColor Green
+        Write-Host "Uploaded: $envProductionFile as .env" -ForegroundColor Green
     } else {
-        Write-Host "FAILED to upload .env file!" -ForegroundColor Red
+        Write-Host "FAILED to upload environment file!" -ForegroundColor Red
     }
 } else {
-    Write-Host "ERROR: .env file not found!" -ForegroundColor Red
+    Write-Host "ERROR: $envProductionFile file not found!" -ForegroundColor Red
 }
 
 $endTime = Get-Date

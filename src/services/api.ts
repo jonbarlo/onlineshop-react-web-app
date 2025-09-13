@@ -22,7 +22,9 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    console.log('All environment variables:', import.meta.env);
+    console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
     console.log('API Base URL:', baseURL);
     
     this.api = axios.create({
