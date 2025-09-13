@@ -3,15 +3,32 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, LogOut, Package, Search, Settings, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
 import { useBrandTheme } from '@/contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuthContext();
   const { cart } = useCartContext();
   const { theme } = useBrandTheme();
+  const { t, i18n } = useTranslation();
+
+  // Force re-render when language changes
+  React.useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      // Force re-render by updating a state or calling a function
+      console.log('Header - Language changed to:', lng);
+    };
+    
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -49,7 +66,7 @@ export const Header: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder={t('search.placeholder')}
                 className="input w-full pl-10 pr-4"
               />
             </div>
@@ -58,6 +75,7 @@ export const Header: React.FC = () => {
           {/* Right side actions */}
           <div className="flex items-center space-x-3">
             <ThemeToggle />
+            <LanguageSwitcher />
             
             {!isAdminRoute && (
               <Link
@@ -86,7 +104,7 @@ export const Header: React.FC = () => {
                     className="nav-link flex items-center space-x-2"
                   >
                     <BarChart3 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
+                    <span className="hidden sm:inline">{t('admin.dashboard')}</span>
                   </Button>
                 </Link>
                 
@@ -101,14 +119,14 @@ export const Header: React.FC = () => {
                   className="nav-link"
                 >
                   <LogOut className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Logout</span>
+                  <span className="hidden sm:inline">{t('navigation.logout')}</span>
                 </Button>
               </div>
             ) : (
               <Link to="/admin/login">
                 <Button variant="outline" size="sm" className="flex items-center space-x-2">
                   <Settings className="h-4 w-4" />
-                  <span>Admin Login</span>
+                  <span>{t('navigation.login')}</span>
                 </Button>
               </Link>
             )}
@@ -121,7 +139,7 @@ export const Header: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t('common.search')}
               className="input w-full pl-10 pr-4"
             />
           </div>

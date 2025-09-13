@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { Alert } from '@/components/ui/Alert';
 import { OrderForm as OrderFormType } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 interface OrderFormProps {
   onClose: () => void;
@@ -17,6 +18,7 @@ interface OrderFormProps {
 
 export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
   const { cart } = useCartContext();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -38,7 +40,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
 
     if (unavailableItems.length > 0) {
       const itemNames = unavailableItems.map(item => item.product.name).join(', ');
-      setSubmitError(`Some items in your cart are no longer available: ${itemNames}. Please remove them and try again.`);
+      setSubmitError(t('checkout.items_unavailable', { items: itemNames }));
       setIsSubmitting(false);
       return;
     }
@@ -79,10 +81,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
           <CardContent className="text-center py-8">
             <CheckCircle className="h-16 w-16 text-success-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-secondary-900 mb-2">
-              Order Placed Successfully!
+              {t('checkout.order_placed_successfully')}
             </h2>
             <p className="text-secondary-600">
-              Thank you for your order. We'll send you a confirmation email shortly.
+              {t('checkout.thank_you_order')}
             </p>
           </CardContent>
         </Card>
@@ -94,7 +96,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Checkout</CardTitle>
+          <CardTitle>{t('checkout.title')}</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -109,21 +111,21 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
-                label="Full Name"
+                label={t('checkout.full_name')}
                 placeholder="John Doe"
-                {...register('customerName', { required: 'Name is required' })}
+                {...register('customerName', { required: t('checkout.name_required') })}
                 error={errors.customerName?.message}
                 required
               />
               <FormInput
-                label="Email"
+                label={t('checkout.email')}
                 type="email"
                 placeholder="john@example.com"
                 {...register('customerEmail', {
-                  required: 'Email is required',
+                  required: t('checkout.email_required'),
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
+                    message: t('checkout.invalid_email'),
                   },
                 })}
                 error={errors.customerEmail?.message}
@@ -133,25 +135,25 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
-                label="Phone Number"
+                label={t('checkout.phone_number')}
                 placeholder="+1234567890"
-                {...register('customerPhone', { required: 'Phone is required' })}
+                {...register('customerPhone', { required: t('checkout.phone_required') })}
                 error={errors.customerPhone?.message}
                 required
               />
             </div>
 
             <FormInput
-              label="Delivery Address"
+              label={t('checkout.delivery_address')}
               placeholder="123 Main St, City, Country"
-              {...register('deliveryAddress', { required: 'Address is required' })}
+              {...register('deliveryAddress', { required: t('checkout.address_required') })}
               error={errors.deliveryAddress?.message}
               required
             />
 
             {/* Order Summary */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold text-secondary-900 mb-2">Order Summary</h3>
+              <h3 className="font-semibold text-secondary-900 mb-2">{t('checkout.order_summary')}</h3>
               <div className="space-y-2 text-sm">
                 {cart.items.map((item) => (
                   <div key={item.product.id} className="flex justify-between items-center">
@@ -160,17 +162,17 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
                         {item.product.name} x {item.quantity}
                       </span>
                       {item.product.status === 'sold_out' && (
-                        <span className="ml-2 text-xs text-red-600 font-medium">(Sold Out)</span>
+                        <span className="ml-2 text-xs text-red-600 font-medium">{t('checkout.sold_out')}</span>
                       )}
                       {item.product.status === 'available' && item.quantity > item.product.quantity && (
-                        <span className="ml-2 text-xs text-orange-600 font-medium">(Insufficient Stock)</span>
+                        <span className="ml-2 text-xs text-orange-600 font-medium">{t('checkout.insufficient_stock')}</span>
                       )}
                     </div>
                     <span>{formatCurrency(item.product.price * item.quantity)}</span>
                   </div>
                 ))}
                 <div className="border-t pt-2 font-semibold flex justify-between">
-                  <span>Total</span>
+                  <span>{t('cart.total')}</span>
                   <span>{formatCurrency(cart.totalAmount)}</span>
                 </div>
               </div>
@@ -183,14 +185,14 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
                 onClick={onClose}
                 className="flex-1"
               >
-                Cancel
+                {t('checkout.cancel')}
               </Button>
               <Button
                 type="submit"
                 loading={isSubmitting}
                 className="flex-1"
               >
-                Place Order
+                {t('checkout.place_order')}
               </Button>
             </div>
           </form>

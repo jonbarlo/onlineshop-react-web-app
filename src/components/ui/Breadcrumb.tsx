@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface BreadcrumbItem {
   label: string;
@@ -14,23 +15,25 @@ interface BreadcrumbProps {
 
 export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
   const location = useLocation();
+  const { t } = useTranslation();
   
   // Auto-generate breadcrumbs from current path if not provided
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const breadcrumbs: BreadcrumbItem[] = [
-      { label: 'Home', href: '/' }
+      { label: t('navigation.home'), href: '/' }
     ];
 
     if (pathSegments[0] === 'admin') {
-      breadcrumbs.push({ label: 'Admin', href: '/admin' });
+      breadcrumbs.push({ label: t('admin.dashboard'), href: '/admin' });
       
       if (pathSegments[1]) {
         const section = pathSegments[1];
         const sectionLabels: Record<string, string> = {
-          'orders': 'Orders',
-          'products': 'Products',
-          'dashboard': 'Dashboard'
+          'orders': t('admin.orders'),
+          'products': t('admin.products'),
+          'dashboard': t('admin.dashboard'),
+          'categories': t('admin.categories')
         };
         
         breadcrumbs.push({
@@ -43,7 +46,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' })
           const itemId = pathSegments[2];
           if (pathSegments[3] === 'edit') {
             breadcrumbs.push({
-              label: `Edit ${sectionLabels[section]?.slice(0, -1) || section.slice(0, -1)} #${itemId}`,
+              label: `${t('common.edit')} ${sectionLabels[section]?.slice(0, -1) || section.slice(0, -1)} #${itemId}`,
               href: location.pathname
             });
           } else {
@@ -54,7 +57,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' })
           }
         } else if (pathSegments[2] === 'new') {
           breadcrumbs.push({
-            label: `New ${sectionLabels[section]?.slice(0, -1) || section.slice(0, -1)}`,
+            label: `${t('common.add')} ${sectionLabels[section]?.slice(0, -1) || section.slice(0, -1)}`,
             href: location.pathname
           });
         }

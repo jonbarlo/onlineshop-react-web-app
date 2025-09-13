@@ -4,6 +4,7 @@ import { ProductCard } from './ProductCard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 interface ProductGridProps {
   products: Product[];
@@ -18,6 +19,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   error = null,
   viewMode = 'grid',
 }) => {
+  const { t } = useTranslation();
   
   if (loading) {
     return (
@@ -94,7 +96,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                       size="sm"
                       disabled={product.status === 'sold_out' || product.quantity === 0}
                     >
-                      {product.status === 'sold_out' ? 'Sold Out' : 'Add to Cart'}
+                      {product.status === 'sold_out' ? 'Sold Out' : t('buttons.add_to_cart')}
                     </Button>
                   </div>
                 </div>

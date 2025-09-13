@@ -12,15 +12,30 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatCurrency } from '@/config/app';
+import { useTranslation } from 'react-i18next';
 
 export const AdminProducts: React.FC = () => {
+  const { t, i18n } = useTranslation();
   // Set page title
-  useDocumentTitle('Admin Products');
+  useDocumentTitle('admin.products');
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [languageKey, setLanguageKey] = useState(i18n.language);
+
+  // Force re-render when language changes
+  React.useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageKey(i18n.language);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const { data, isLoading, error } = useQuery(
     ['admin-products', search],
@@ -47,7 +62,7 @@ export const AdminProducts: React.FC = () => {
   );
 
   const handleDeleteProduct = async (productId: number, productName: string) => {
-    if (confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+    if (confirm(t('admin.confirm_delete_product', { name: productName }))) {
       try {
         await deleteProductMutation.mutateAsync(productId);
       } catch (error) {
@@ -66,8 +81,8 @@ export const AdminProducts: React.FC = () => {
 
   if (error) {
     return (
-      <Alert type="error" title="Failed to load products">
-        Unable to load products. Please try again later.
+      <Alert type="error" title={t('admin.failed_to_load_products')}>
+        {t('admin.unable_to_load_products')}
       </Alert>
     );
   }
@@ -79,12 +94,12 @@ export const AdminProducts: React.FC = () => {
       
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Products</h1>
-          <p className="text-secondary-600">Manage your product catalog</p>
+          <h1 key={languageKey} className="text-3xl font-bold text-secondary-900 dark:text-white">{t('admin.products')}</h1>
+          <p key={languageKey} className="text-secondary-600">{t('admin.manage_product_catalog')}</p>
         </div>
         <Button onClick={() => navigate('/admin/products/new')}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Product
+          <span key={languageKey}>{t('admin.add_product')}</span>
         </Button>
       </div>
 
@@ -96,7 +111,8 @@ export const AdminProducts: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                 <Input
-                  placeholder="Search products..."
+                  key={languageKey}
+                  placeholder={t('search.placeholder')}
                   value={search}
                   onChange={setSearch}
                   className="pl-10"

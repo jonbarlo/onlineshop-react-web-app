@@ -8,11 +8,13 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useCartContext } from '@/contexts/CartContext';
+import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/config/app';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { addToCart, getItemQuantity, updateQuantity } = useCartContext();
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(1);
 
   const { data, isLoading, error } = useQuery(
@@ -221,7 +223,7 @@ export const ProductDetail: React.FC = () => {
                 size="lg"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {product.status === 'sold_out' ? 'Notify When Available' : 'Add to Cart'}
+                {product.status === 'sold_out' ? 'Notify When Available' : t('buttons.add_to_cart')}
               </Button>
             </div>
 

@@ -24,10 +24,32 @@ import { Alert } from '@/components/ui/Alert';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatCurrency } from '@/config/app';
+import { useTranslation } from 'react-i18next';
 
 export const Dashboard: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  
+  // Debug logging
+  console.log('Dashboard - Current language:', i18n.language);
+  console.log('Dashboard - Translation test:', t('admin.dashboard_title'));
+  console.log('Dashboard - All admin keys:', Object.keys(i18n.getResourceBundle(i18n.language, 'translation')?.admin || {}));
+  
   // Set page title
-  useDocumentTitle('Admin Dashboard');
+  useDocumentTitle('admin.dashboard');
+
+  // Force re-render when language changes
+  const [languageKey, setLanguageKey] = React.useState(i18n.language);
+
+  React.useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageKey(i18n.language);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const { data, isLoading, error } = useQuery(
     'dashboard',
@@ -47,8 +69,8 @@ export const Dashboard: React.FC = () => {
 
   if (error) {
     return (
-      <Alert type="error" title="Failed to load dashboard">
-        Unable to load dashboard statistics. Please try again later.
+      <Alert type="error" title={t('admin.failed_to_load_dashboard')}>
+        {t('admin.unable_to_load_stats')}
       </Alert>
     );
   }
@@ -57,8 +79,8 @@ export const Dashboard: React.FC = () => {
 
   if (!dashboardData) {
     return (
-      <Alert type="error" title="No data available">
-        Dashboard statistics are not available at the moment.
+      <Alert type="error" title={t('admin.no_data_available')}>
+        {t('admin.dashboard_stats_unavailable')}
       </Alert>
     );
   }
@@ -76,28 +98,28 @@ export const Dashboard: React.FC = () => {
   // Order Statistics Cards
   const orderStatCards = [
     {
-      title: 'Total Orders',
+      title: t('admin.total_orders'),
       value: statistics.totalOrders || 0,
       icon: ShoppingCart,
       color: 'text-primary-600',
       bgColor: 'bg-primary-50',
     },
     {
-      title: 'New Orders',
+      title: t('admin.new_orders'),
       value: statistics.newOrders || 0,
       icon: Clock,
       color: 'text-warning-600',
       bgColor: 'bg-warning-50',
     },
     {
-      title: 'Paid Orders',
+      title: t('admin.paid_orders'),
       value: statistics.paidOrders || 0,
       icon: CheckCircle,
       color: 'text-success-600',
       bgColor: 'bg-success-50',
     },
     {
-      title: 'Ready for Delivery',
+      title: t('admin.delivered_orders'),
       value: alerts.readyForDelivery || 0,
       icon: Truck,
       color: 'text-secondary-600',
@@ -108,28 +130,28 @@ export const Dashboard: React.FC = () => {
   // Product Statistics Cards
   const productStatCards = [
     {
-      title: 'Total Products',
+      title: t('admin.total_products'),
       value: statistics.totalProducts || 0,
       icon: Package,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
-      title: 'Active Products',
+      title: t('admin.active_products'),
       value: statistics.activeProducts || 0,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
-      title: 'Low Stock',
+      title: t('admin.low_stock'),
       value: statistics.lowStockProducts || 0,
       icon: AlertTriangle,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
     {
-      title: 'Total Customers',
+      title: t('admin.total_customers'),
       value: statistics.totalCustomers || 0,
       icon: Users,
       color: 'text-purple-600',
@@ -140,21 +162,21 @@ export const Dashboard: React.FC = () => {
   // Performance Metrics
   const performanceCards = [
     {
-      title: 'Conversion Rate',
+      title: t('admin.conversion_rate'),
       value: `${performance.conversionRate || '0'}%`,
       icon: TrendingUp,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
-      title: 'Average Order Value',
+      title: t('admin.average_order_value'),
       value: `$${performance.averageOrderValue || '0'}`,
       icon: DollarSign,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
-      title: 'Stock Turnover',
+      title: t('admin.stock_turnover'),
       value: `${performance.stockTurnover || '0'}%`,
       icon: BarChart3,
       color: 'text-purple-600',
@@ -168,26 +190,26 @@ export const Dashboard: React.FC = () => {
       <Breadcrumb className="mb-4" />
       
       <div>
-        <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Dashboard</h1>
-        <p className="text-secondary-600">Comprehensive overview of your store performance</p>
+        <h1 key={languageKey} className="text-3xl font-bold text-secondary-900 dark:text-white">{t('admin.dashboard_title')}</h1>
+        <p key={languageKey} className="text-secondary-600">{t('admin.dashboard_subtitle')}</p>
       </div>
 
       {/* Alerts Section */}
       {(alerts.lowStock > 0 || alerts.soldOut > 0 || alerts.newOrders > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {alerts.lowStock > 0 && (
-            <Alert type="warning" title="Low Stock Alert">
-              {alerts.lowStock} products are running low on stock
+            <Alert key={languageKey} type="warning" title={t('admin.low_stock_alert')}>
+              {t('admin.low_stock_message', { count: alerts.lowStock })}
             </Alert>
           )}
           {alerts.soldOut > 0 && (
-            <Alert type="error" title="Sold Out Alert">
-              {alerts.soldOut} products are completely sold out
+            <Alert key={languageKey} type="error" title={t('admin.sold_out_alert')}>
+              {t('admin.sold_out_message', { count: alerts.soldOut })}
             </Alert>
           )}
           {alerts.newOrders > 0 && (
-            <Alert type="info" title="New Orders">
-              {alerts.newOrders} new orders require attention
+            <Alert key={languageKey} type="info" title={t('admin.new_orders_alert')}>
+              {t('admin.new_orders_message', { count: alerts.newOrders })}
             </Alert>
           )}
         </div>
@@ -195,7 +217,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Order Statistics */}
       <div>
-        <h2 className="text-xl font-semibold text-secondary-900 dark:text-white mb-4">Order Statistics</h2>
+        <h2 key={languageKey} className="text-xl font-semibold text-secondary-900 dark:text-white mb-4">{t('admin.order_statistics')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {orderStatCards && orderStatCards.map((stat) => {
             const Icon = stat.icon;
@@ -226,34 +248,34 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle key={languageKey} className="flex items-center">
               <DollarSign className="h-5 w-5 mr-2" />
-              Total Revenue
+              {t('admin.total_revenue')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-success-600">
               {formatCurrency(statistics.totalRevenue || 0)}
             </div>
-            <p className="text-sm text-secondary-600 mt-1">
-              All-time revenue from orders
+            <p key={languageKey} className="text-sm text-secondary-600 mt-1">
+              {t('admin.all_time_revenue')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle key={languageKey} className="flex items-center">
               <TrendingUp className="h-5 w-5 mr-2" />
-              Today's Revenue
+              {t('admin.today_revenue')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary-600">
               {formatCurrency(statistics.todayRevenue || 0)}
             </div>
-            <p className="text-sm text-secondary-600 mt-1">
-              Revenue generated today
+            <p key={languageKey} className="text-sm text-secondary-600 mt-1">
+              {t('admin.revenue_today')}
             </p>
           </CardContent>
         </Card>
@@ -261,7 +283,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Product Statistics */}
       <div>
-        <h2 className="text-xl font-semibold text-secondary-900 dark:text-white mb-4">Product & Inventory</h2>
+        <h2 key={languageKey} className="text-xl font-semibold text-secondary-900 dark:text-white mb-4">{t('admin.product_inventory')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {productStatCards && productStatCards.map((stat) => {
             const Icon = stat.icon;
@@ -290,7 +312,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Performance Metrics */}
       <div>
-        <h2 className="text-xl font-semibold text-secondary-900 dark:text-white mb-4">Performance Metrics</h2>
+        <h2 key={languageKey} className="text-xl font-semibold text-secondary-900 dark:text-white mb-4">{t('admin.performance_metrics')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {performanceCards && performanceCards.map((stat) => {
             const Icon = stat.icon;
@@ -321,14 +343,14 @@ export const Dashboard: React.FC = () => {
       {categoryStats && categoryStats.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Category Breakdown</CardTitle>
+            <CardTitle key={languageKey}>{t('admin.category_breakdown')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categoryStats.map((category) => (
                 <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <span className="font-medium text-secondary-900">{category.name}</span>
-                  <span className="text-sm text-secondary-600">{category.productCount} products</span>
+                  <span className="text-sm text-secondary-600">{category.productCount} {t('admin.products')}</span>
                 </div>
               ))}
             </div>
@@ -341,7 +363,7 @@ export const Dashboard: React.FC = () => {
         {/* Recent Orders */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle key={languageKey}>{t('admin.recent_orders')}</CardTitle>
           </CardHeader>
           <CardContent>
             {recentOrders && recentOrders.length > 0 ? (
@@ -383,7 +405,7 @@ export const Dashboard: React.FC = () => {
               </div>
             ) : (
               <p className="text-secondary-600 text-center py-8">
-                No recent orders
+                {t('admin.no_recent_orders')}
               </p>
             )}
           </CardContent>
@@ -392,7 +414,7 @@ export const Dashboard: React.FC = () => {
         {/* Recent Products */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Products</CardTitle>
+            <CardTitle key={languageKey}>{t('admin.recent_products')}</CardTitle>
           </CardHeader>
           <CardContent>
             {recentProducts && recentProducts.length > 0 ? (
@@ -419,8 +441,8 @@ export const Dashboard: React.FC = () => {
                                 : 'bg-success-100 text-success-800'
                             }`}
                           >
-                            {product.status === 'sold_out' ? 'Sold Out' : 
-                             (product.quantity || 0) <= 5 ? 'Low Stock' : 'In Stock'}
+                            {product.status === 'sold_out' ? t('admin.out_of_stock') : 
+                             (product.quantity || 0) <= 5 ? t('admin.low_stock') : t('admin.in_stock')}
                           </span>
                       </div>
                     </div>
@@ -428,7 +450,7 @@ export const Dashboard: React.FC = () => {
               </div>
             ) : (
               <p className="text-secondary-600 text-center py-8">
-                No recent products
+                {t('admin.no_recent_products')}
               </p>
             )}
           </CardContent>
@@ -438,7 +460,7 @@ export const Dashboard: React.FC = () => {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle key={languageKey}>{t('admin.quick_actions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -447,8 +469,8 @@ export const Dashboard: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <Eye className="h-8 w-8 text-primary-600" />
                   <div>
-                    <h3 className="font-medium text-secondary-900">View All Orders</h3>
-                    <p className="text-sm text-secondary-500">Manage and track orders</p>
+                    <h3 key={languageKey} className="font-medium text-secondary-900">{t('admin.view_all_orders')}</h3>
+                    <p key={languageKey} className="text-sm text-secondary-500">{t('admin.manage_track_orders')}</p>
                   </div>
                 </div>
               </div>
@@ -458,8 +480,8 @@ export const Dashboard: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <Edit className="h-8 w-8 text-warning-600" />
                   <div>
-                    <h3 className="font-medium text-secondary-900">Manage Products</h3>
-                    <p className="text-sm text-secondary-500">Edit product catalog</p>
+                    <h3 key={languageKey} className="font-medium text-secondary-900">{t('admin.manage_products')}</h3>
+                    <p key={languageKey} className="text-sm text-secondary-500">{t('admin.edit_product_catalog')}</p>
                   </div>
                 </div>
               </div>
@@ -469,8 +491,8 @@ export const Dashboard: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <Tag className="h-8 w-8 text-blue-600" />
                   <div>
-                    <h3 className="font-medium text-secondary-900">Manage Categories</h3>
-                    <p className="text-sm text-secondary-500">Organize product categories</p>
+                    <h3 key={languageKey} className="font-medium text-secondary-900">{t('admin.manage_categories')}</h3>
+                    <p key={languageKey} className="text-sm text-secondary-500">{t('admin.organize_categories')}</p>
                   </div>
                 </div>
               </div>
@@ -480,8 +502,8 @@ export const Dashboard: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <Plus className="h-8 w-8 text-success-600" />
                   <div>
-                    <h3 className="font-medium text-secondary-900">Add Product</h3>
-                    <p className="text-sm text-secondary-500">Create new product</p>
+                    <h3 key={languageKey} className="font-medium text-secondary-900">{t('admin.add_product')}</h3>
+                    <p key={languageKey} className="text-sm text-secondary-500">{t('admin.create_new_product')}</p>
                   </div>
                 </div>
               </div>

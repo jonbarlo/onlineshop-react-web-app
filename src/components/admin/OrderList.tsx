@@ -20,13 +20,15 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatCurrency } from '@/config/app';
+import { useTranslation } from 'react-i18next';
 
 type SortField = 'orderNumber' | 'customerName' | 'status' | 'totalAmount' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
 
 export const OrderList: React.FC = () => {
+  const { t, i18n } = useTranslation();
   // Set page title
-  useDocumentTitle('Admin Orders');
+  useDocumentTitle('admin.orders');
 
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
@@ -34,6 +36,19 @@ export const OrderList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [languageKey, setLanguageKey] = useState(i18n.language);
+
+  // Force re-render when language changes
+  React.useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageKey(i18n.language);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const { data, isLoading, error } = useQuery(
     ['admin-orders', page, search, statusFilter],
@@ -170,8 +185,8 @@ export const OrderList: React.FC = () => {
 
   if (error) {
     return (
-      <Alert type="error" title="Failed to load orders">
-        Unable to load orders. Please try again later.
+      <Alert type="error" title={t('admin.failed_to_load_orders')}>
+        {t('admin.unable_to_load_orders')}
       </Alert>
     );
   }
@@ -179,8 +194,8 @@ export const OrderList: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">Orders</h1>
-        <p className="text-secondary-600">Manage customer orders</p>
+        <h1 key={languageKey} className="text-3xl font-bold text-secondary-900 dark:text-white">{t('admin.orders')}</h1>
+        <p key={languageKey} className="text-secondary-600">{t('admin.manage_orders_subtitle')}</p>
       </div>
 
       {/* Filters */}
@@ -191,7 +206,8 @@ export const OrderList: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                 <Input
-                  placeholder="Search by order number, customer name, email, status, amount, or date..."
+                  key={languageKey}
+                  placeholder={t('admin.search_orders')}
                   value={search}
                   onChange={setSearch}
                   className="pl-10 pr-10"
@@ -208,14 +224,15 @@ export const OrderList: React.FC = () => {
             </div>
             <div className="sm:w-48">
               <select
+                key={languageKey}
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as OrderStatus | '')}
                 className="input w-full"
               >
-                <option value="">All Status</option>
-                <option value="new">New</option>
-                <option value="paid">Paid</option>
-                <option value="ready_for_delivery">Ready for Delivery</option>
+                <option value="">{t('admin.all_status')}</option>
+                <option value="new">{t('admin.new')}</option>
+                <option value="paid">{t('admin.paid')}</option>
+                <option value="ready_for_delivery">{t('admin.ready_for_delivery')}</option>
               </select>
             </div>
           </div>
@@ -226,15 +243,15 @@ export const OrderList: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm font-medium text-secondary-600">
-              {search ? `Filtered Orders (${orders.length} of ${allOrders.length})` : 'Total Orders'}
+            <div key={languageKey} className="text-sm font-medium text-secondary-600">
+              {search ? t('admin.filtered_orders', { filtered: orders.length, total: allOrders.length }) : t('admin.total_orders')}
             </div>
             <div className="text-2xl font-bold text-secondary-900">{orders.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm font-medium text-secondary-600">Total Revenue</div>
+            <div key={languageKey} className="text-sm font-medium text-secondary-600">{t('admin.total_revenue')}</div>
             <div className="text-2xl font-bold text-secondary-900">
               {formatCurrency(allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0))}
             </div>
@@ -242,7 +259,7 @@ export const OrderList: React.FC = () => {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm font-medium text-secondary-600">Average Order Value</div>
+            <div key={languageKey} className="text-sm font-medium text-secondary-600">{t('admin.average_order_value')}</div>
             <div className="text-2xl font-bold text-secondary-900">
               {allOrders.length > 0 ? formatCurrency(allOrders.reduce((total, order) => total + calculateOrderTotal(order), 0) / allOrders.length) : formatCurrency(0)}
             </div>
@@ -268,7 +285,7 @@ export const OrderList: React.FC = () => {
                       onClick={() => handleSort('orderNumber')}
                     >
                       <div className="flex items-center space-x-1 group">
-                        <span className="group-hover:text-primary-600">Order</span>
+                        <span key={languageKey} className="group-hover:text-primary-600">{t('admin.order')}</span>
                         {getSortIcon('orderNumber')}
                       </div>
                     </th>
@@ -279,7 +296,7 @@ export const OrderList: React.FC = () => {
                       onClick={() => handleSort('customerName')}
                     >
                       <div className="flex items-center space-x-1 group">
-                        <span className="group-hover:text-primary-600">Customer</span>
+                        <span key={languageKey} className="group-hover:text-primary-600">{t('admin.customer')}</span>
                         {getSortIcon('customerName')}
                       </div>
                     </th>
@@ -290,7 +307,7 @@ export const OrderList: React.FC = () => {
                       onClick={() => handleSort('status')}
                     >
                       <div className="flex items-center space-x-1 group">
-                        <span className="group-hover:text-primary-600">Status</span>
+                        <span key={languageKey} className="group-hover:text-primary-600">{t('admin.status')}</span>
                         {getSortIcon('status')}
                       </div>
                     </th>
@@ -301,7 +318,7 @@ export const OrderList: React.FC = () => {
                       onClick={() => handleSort('totalAmount')}
                     >
                       <div className="flex items-center space-x-1 group">
-                        <span className="group-hover:text-primary-600">Total</span>
+                        <span key={languageKey} className="group-hover:text-primary-600">{t('admin.total')}</span>
                         {getSortIcon('totalAmount')}
                       </div>
                     </th>
@@ -312,12 +329,12 @@ export const OrderList: React.FC = () => {
                       onClick={() => handleSort('createdAt')}
                     >
                       <div className="flex items-center space-x-1 group">
-                        <span className="group-hover:text-primary-600">Date</span>
+                        <span key={languageKey} className="group-hover:text-primary-600">{t('admin.date')}</span>
                         {getSortIcon('createdAt')}
                       </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                      Actions
+                    <th key={languageKey} className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                      {t('admin.actions')}
                     </th>
                   </tr>
                 </thead>

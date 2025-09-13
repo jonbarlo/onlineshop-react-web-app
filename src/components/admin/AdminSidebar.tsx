@@ -8,6 +8,7 @@ import {
   Settings,
   Home
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -16,28 +17,29 @@ interface AdminSidebarProps {
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const navigationItems = [
     {
-      name: 'Dashboard',
+      name: t('admin.dashboard'),
       href: '/admin',
       icon: BarChart3,
       current: location.pathname === '/admin'
     },
     {
-      name: 'Products',
+      name: t('admin.products'),
       href: '/admin/products',
       icon: Package,
       current: location.pathname.startsWith('/admin/products')
     },
     {
-      name: 'Categories',
+      name: t('admin.categories'),
       href: '/admin/categories',
       icon: Tag,
       current: location.pathname.startsWith('/admin/categories')
     },
     {
-      name: 'Orders',
+      name: t('admin.orders'),
       href: '/admin/orders',
       icon: ShoppingBag,
       current: location.pathname.startsWith('/admin/orders')
@@ -68,7 +70,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                 <Settings className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                Admin Panel
+                {t('admin.admin_panel')}
               </span>
             </div>
             <button
@@ -117,7 +119,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
               className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200"
             >
               <Home className="mr-3 h-5 w-5" />
-              Back to Store
+              {t('admin.back_to_store')}
             </Link>
           </div>
         </div>

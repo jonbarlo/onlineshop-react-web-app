@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { useCartContext } from '@/contexts/CartContext';
 import { formatCurrency } from '@/config/app';
+import { useTranslation } from 'react-i18next';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, getItemQuantity, cart } = useCartContext();
+  const { t } = useTranslation();
   const [quantityInCart, setQuantityInCart] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -159,7 +161,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             ) : (
               <>
                 <Plus className="h-4 w-4 mr-2" />
-                Add to Cart
+                {t('buttons.add_to_cart')}
               </>
             )}
           </Button>

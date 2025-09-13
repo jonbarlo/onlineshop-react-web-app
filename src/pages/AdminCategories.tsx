@@ -17,14 +17,29 @@ import {
   Loader2
 } from 'lucide-react';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useTranslation } from 'react-i18next';
 
 export const AdminCategories: React.FC = () => {
+  const { t, i18n } = useTranslation();
   // Set page title
-  useDocumentTitle('Admin Categories');
+  useDocumentTitle('admin.categories');
 
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
+  const [languageKey, setLanguageKey] = useState(i18n.language);
+
+  // Force re-render when language changes
+  React.useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageKey(i18n.language);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const queryClient = useQueryClient();
 
@@ -169,14 +184,14 @@ export const AdminCategories: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Categories</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Manage product categories and their organization
+          <h1 key={languageKey} className="text-3xl font-bold text-gray-900 dark:text-white">{t('admin.categories')}</h1>
+          <p key={languageKey} className="text-gray-600 dark:text-gray-400 mt-1">
+            {t('admin.manage_categories_subtitle')}
           </p>
         </div>
         <Button onClick={handleCreate} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Add Category
+          {t('admin.add_category')}
         </Button>
       </div>
 
@@ -185,7 +200,8 @@ export const AdminCategories: React.FC = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search categories..."
+              key={languageKey}
+              placeholder={t('admin.search_categories')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e)}
               className="pl-10"
@@ -196,29 +212,29 @@ export const AdminCategories: React.FC = () => {
 
       {error ? (
         <Alert type="error">
-          Failed to load categories. Please try again.
+          {t('admin.failed_to_load_categories')}
         </Alert>
       ) : null}
 
       <Card>
         <CardHeader>
-          <CardTitle>Categories ({filteredCategories.length})</CardTitle>
+          <CardTitle key={languageKey}>{t('admin.categories_count', { count: filteredCategories.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              <span className="ml-2 text-gray-600">Loading categories...</span>
+              <span className="ml-2 text-gray-600">{t('admin.loading_categories')}</span>
             </div>
           ) : filteredCategories.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-gray-500 mb-4">
-                {searchTerm ? 'No categories match your search' : 'No categories found'}
+                {searchTerm ? t('admin.no_categories_match_search') : t('admin.no_categories_found')}
               </div>
               {!searchTerm && (
                 <Button onClick={handleCreate}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Category
+                  {t('admin.create_first_category')}
                 </Button>
               )}
             </div>
@@ -227,23 +243,23 @@ export const AdminCategories: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Name
+                    <th key={languageKey} className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      {t('admin.name')}
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Description
+                    <th key={languageKey} className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      {t('admin.description')}
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Sort Order
+                    <th key={languageKey} className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      {t('admin.sort_order')}
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Status
+                    <th key={languageKey} className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      {t('admin.status')}
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Created
+                    <th key={languageKey} className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      {t('admin.created')}
                     </th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Actions
+                    <th key={languageKey} className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      {t('admin.actions')}
                     </th>
                   </tr>
                 </thead>

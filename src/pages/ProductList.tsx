@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
+import { useTranslation } from 'react-i18next';
 // import { Link } from 'react-router-dom'; // Unused since hiding categories section
 import { 
   // Smartphone, 
@@ -49,6 +50,29 @@ export const ProductList: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
   const { theme } = useBrandTheme();
+  const { t, i18n, ready } = useTranslation();
+
+  // Debug logging for translations
+  console.log('ProductList - Current language:', i18n.language);
+  console.log('ProductList - i18n ready:', ready);
+  console.log('ProductList - Featured translation:', t('products.featured'));
+  console.log('ProductList - Bestseller translation:', t('products.bestseller'));
+
+  // Force re-render when language changes
+  const [languageKey, setLanguageKey] = useState(i18n.language);
+  
+  React.useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      console.log('Language changed to:', lng);
+      setLanguageKey(lng);
+    };
+    
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
   
   // Fetch categories from database - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
   // const { data: categoriesData } = useQuery(
@@ -122,15 +146,15 @@ export const ProductList: React.FC = () => {
           {/* Content */}
           <div className="relative p-8 md:p-16 lg:p-20">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-5xl md:text-7xl font-bold mb-6">
-                <span className="block text-white drop-shadow-lg">Empower Your</span>
+              <h1 key={languageKey} className="text-5xl md:text-7xl font-bold mb-6">
+                <span className="block text-white drop-shadow-lg">{t('homepage.hero_title_part1')}</span>
                 <span 
                   className="block bg-clip-text text-transparent"
                   style={{
                     backgroundImage: `linear-gradient(135deg, ${theme?.colors.primary}, ${theme?.colors.primaryDark})`
                   }}
                 >
-                  Active Journey
+                  {t('homepage.hero_title_part2')}
                 </span>
               </h1>
               
@@ -147,7 +171,7 @@ export const ProductList: React.FC = () => {
                     border: 'none'
                   }}
                 >
-                  Shop Collection
+                  {t('homepage.shop_collection')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button 
@@ -159,24 +183,24 @@ export const ProductList: React.FC = () => {
                     color: 'white'
                   }}
                 >
-                  View Lookbook
+                  {t('homepage.view_lookbook')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
               
               {/* Feature badges */}
-              <div className="flex flex-wrap justify-center gap-6 text-sm text-white">
+              <div key={languageKey} className="flex flex-wrap justify-center gap-6 text-sm text-white">
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                   <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                  <span>Free Shipping</span>
+                  <span>{t('homepage.free_shipping_badge')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                   <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                  <span>30-Day Returns</span>
+                  <span>{t('homepage.day_returns_badge')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                   <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                  <span>Sustainable Materials</span>
+                  <span>{t('homepage.sustainable_materials_badge')}</span>
                 </div>
               </div>
             </div>
@@ -222,29 +246,29 @@ export const ProductList: React.FC = () => {
             <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme?.colors.primary }}>
               <Truck className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Free Shipping</h3>
-            <p className="text-gray-600 text-sm">On orders over $75</p>
+            <h3 key={`${languageKey}-fs`} className="text-lg font-semibold text-gray-900 mb-2">{t('benefits.free_shipping_title')}</h3>
+            <p className="text-gray-600 text-sm">{t('benefits.free_shipping_desc')}</p>
           </div>
           <div className="text-center p-6 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border border-white/20">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme?.colors.primary }}>
               <Shield className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Sustainable</h3>
-            <p className="text-gray-600 text-sm">Eco-friendly materials</p>
+            <h3 key={`${languageKey}-s`} className="text-lg font-semibold text-gray-900 mb-2">{t('benefits.sustainable_title')}</h3>
+            <p className="text-gray-600 text-sm">{t('benefits.sustainable_desc')}</p>
           </div>
           <div className="text-center p-6 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border border-white/20">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme?.colors.primary }}>
               <RefreshCw className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy Returns</h3>
-            <p className="text-gray-600 text-sm">30-day return policy</p>
+            <h3 key={`${languageKey}-er`} className="text-lg font-semibold text-gray-900 mb-2">{t('benefits.easy_returns_title')}</h3>
+            <p className="text-gray-600 text-sm">{t('benefits.easy_returns_desc')}</p>
           </div>
           <div className="text-center p-6 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border border-white/20">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme?.colors.primary }}>
               <Heart className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Community</h3>
-            <p className="text-gray-600 text-sm">Join our wellness tribe</p>
+            <h3 key={`${languageKey}-c`} className="text-lg font-semibold text-gray-900 mb-2">{t('benefits.community_title')}</h3>
+            <p className="text-gray-600 text-sm">{t('benefits.community_desc')}</p>
           </div>
         </section>
       ) : (
@@ -308,7 +332,7 @@ export const ProductList: React.FC = () => {
       {/* Featured Products */}
       <section>
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Featured Products</h2>
+                 <h2 key={languageKey} className="text-3xl font-bold text-gray-900 dark:text-white">{t('products.featured')}</h2>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1 text-yellow-500">
               <Star className="h-5 w-5 fill-current" />
@@ -316,7 +340,7 @@ export const ProductList: React.FC = () => {
               <Star className="h-5 w-5 fill-current" />
               <Star className="h-5 w-5 fill-current" />
               <Star className="h-5 w-5 fill-current" />
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Customer favorites</span>
+              <span key={languageKey} className="ml-2 text-sm text-gray-600 dark:text-gray-400">{t('products.bestseller')}</span>
             </div>
             
             {/* View Toggle Buttons */}
@@ -347,7 +371,7 @@ export const ProductList: React.FC = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search products by name, description, or category..."
+                    placeholder={t('search.placeholder')}
                     value={search}
                     onChange={setSearch}
                     className="pl-10"

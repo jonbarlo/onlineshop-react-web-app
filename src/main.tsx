@@ -6,6 +6,7 @@ import { CartProvider } from './contexts/CartContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { BrandThemeProvider } from './contexts/ThemeContext'
 import App from './App.tsx'
+import './i18n.ts' // Initialize i18n
 import './index.css'
 
 const queryClient = new QueryClient({

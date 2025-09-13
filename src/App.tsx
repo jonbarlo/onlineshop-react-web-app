@@ -15,10 +15,12 @@ import { OrderEdit } from '@/pages/OrderEdit';
 import { ProductCreate } from '@/pages/ProductCreate';
 import { ProductEdit } from '@/pages/ProductEdit';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { LanguageDebug } from '@/components/ui/LanguageDebug';
 
 function App() {
   console.log('App component rendered');
   return (
+    <>
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout />}>
@@ -51,6 +53,8 @@ function App() {
       {/* Catch all route */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <LanguageDebug />
+    </>
   );
 }
 

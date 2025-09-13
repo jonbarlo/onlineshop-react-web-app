@@ -9,15 +9,17 @@ import { FormInput } from '@/components/ui/FormInput';
 import { Alert } from '@/components/ui/Alert';
 import { LoginForm as LoginFormType } from '@/types';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useTranslation } from 'react-i18next';
 
 export const LoginForm: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuthContext();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Set page title
-  useDocumentTitle('Admin Login');
+  useDocumentTitle('admin.login');
 
   const {
     register,
@@ -47,39 +49,39 @@ export const LoginForm: React.FC = () => {
         <div className="text-center">
           <Package className="h-12 w-12 text-primary-600 mx-auto" />
           <h2 className="mt-6 text-3xl font-bold text-secondary-900 dark:text-white">
-            Admin Login
+            {t('admin.login')}
           </h2>
           <p className="mt-2 text-sm text-secondary-600">
-            Sign in to access the admin dashboard
+            {t('admin.sign_in_to_access')}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
+            <CardTitle>{t('admin.sign_in')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {error && (
-                <Alert type="error" title="Login Failed">
+                <Alert type="error" title={t('admin.login_failed')}>
                   {error}
                 </Alert>
               )}
 
               <FormInput
-                label="Username"
+                label={t('admin.username')}
                 placeholder="admin"
-                {...register('username', { required: 'Username is required' })}
+                {...register('username', { required: t('admin.username_required') })}
                 error={errors.username?.message}
                 required
               />
 
               <div className="relative">
                 <FormInput
-                  label="Password"
+                  label={t('admin.password')}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  {...register('password', { required: 'Password is required' })}
+                  placeholder={t('admin.enter_password')}
+                  {...register('password', { required: t('admin.password_required') })}
                   error={errors.password?.message}
                   required
                 />
@@ -101,7 +103,7 @@ export const LoginForm: React.FC = () => {
                 className="w-full"
                 size="lg"
               >
-                Sign In
+                {t('admin.sign_in')}
               </Button>
             </form>
           </CardContent>

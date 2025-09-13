@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CartItem } from './CartItem';
 import { OrderForm } from './OrderForm';
+import { useTranslation } from 'react-i18next';
 
 export const Cart: React.FC = () => {
   const navigate = useNavigate();
   const { cart, updateQuantity, removeFromCart, clearCart } = useCartContext();
+  const { t } = useTranslation();
   const [showOrderForm, setShowOrderForm] = useState(false);
 
   console.log('Cart component rendered with cart:', cart);
@@ -24,7 +26,7 @@ export const Cart: React.FC = () => {
             onClick={() => navigate('/')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Products
+            {t('common.back')} {t('navigation.home')}
           </Button>
         </div>
 
@@ -32,13 +34,13 @@ export const Cart: React.FC = () => {
           <CardContent>
             <ShoppingCart className="h-16 w-16 text-secondary-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-secondary-900 mb-2">
-              Your cart is empty
+              {t('cart.empty_cart')}
             </h2>
             <p className="text-secondary-600 mb-6">
               Add some products to get started
             </p>
             <Button onClick={() => navigate('/')}>
-              Continue Shopping
+              {t('cart.continue_shopping')}
             </Button>
           </CardContent>
         </Card>
@@ -55,7 +57,7 @@ export const Cart: React.FC = () => {
           onClick={() => navigate('/')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Products
+          {t('common.back')} {t('navigation.home')}
         </Button>
       </div>
 
@@ -64,7 +66,7 @@ export const Cart: React.FC = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Shopping Cart ({cart.totalItems} items)</CardTitle>
+              <CardTitle>{t('cart.title')} ({cart.totalItems} {t('cart.items_count_plural')})</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {cart.items.map((item) => (
@@ -87,16 +89,16 @@ export const Cart: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span>Items ({cart.totalItems})</span>
+                <span>{t('cart.items_count_plural')} ({cart.totalItems})</span>
                 <span>${cart.totalAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Shipping</span>
+                <span>{t('cart.shipping')}</span>
                 <span>Free</span>
               </div>
               <div className="border-t pt-4">
                 <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
+                  <span>{t('cart.total')}</span>
                   <span>${cart.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
@@ -105,7 +107,7 @@ export const Cart: React.FC = () => {
                 className="w-full"
                 size="lg"
               >
-                Proceed to Checkout
+                {t('cart.proceed_to_checkout')}
               </Button>
             </CardContent>
           </Card>
