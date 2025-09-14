@@ -6,7 +6,7 @@ import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { ProductGallery } from './ProductGallery';
 import { useCartContext } from '@/contexts/CartContext';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/config/app';
@@ -79,18 +79,17 @@ export const ProductDetail: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Product Image */}
-        <div className="aspect-square overflow-hidden rounded-lg relative">
-          <OptimizedImage
-            src={product.imageUrl}
-            alt={product.name}
-            className={`w-full h-full object-cover transition-all duration-300 ${
-              product.status === 'sold_out' ? 'grayscale brightness-75' : ''
-            }`}
-            loading="eager"
+        {/* Product Gallery */}
+        <div className={`relative ${product.status === 'sold_out' ? 'grayscale brightness-75' : ''}`}>
+          <ProductGallery
+            productId={product.id}
+            fallbackImageUrl={product.imageUrl}
+            showThumbnails={true}
+            autoPlay={false}
+            showFullscreen={true}
           />
           {product.status === 'sold_out' && (
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-6 border border-white/20 shadow-2xl">
                   <div className="text-white text-3xl font-bold mb-2">Sold Out</div>
@@ -147,11 +146,47 @@ export const ProductDetail: React.FC = () => {
             </div>
           </div>
 
+          {/* Product Attributes */}
+          {(product.color || product.size) && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">
+                Product Details
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {product.color && (
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium text-secondary-600 dark:text-gray-400">Color:</span>
+                    <div className="flex items-center space-x-2">
+                      {product.color.startsWith('#') ? (
+                        <div 
+                          className="w-5 h-5 rounded-full border border-gray-300 shadow-sm"
+                          style={{ backgroundColor: product.color }}
+                          title={product.color}
+                        />
+                      ) : null}
+                      <span className="text-sm text-secondary-900 dark:text-white font-medium">
+                        {product.color}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {product.size && (
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium text-secondary-600 dark:text-gray-400">Size:</span>
+                    <span className="text-sm text-secondary-900 dark:text-white font-medium">
+                      {product.size}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div>
-            <h2 className="text-lg font-semibold text-secondary-900 mb-2">
+            <h2 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">
               Description
             </h2>
-            <p className="text-secondary-600 leading-relaxed">
+            <p className="text-secondary-600 dark:text-gray-300 leading-relaxed">
               {product.description}
             </p>
           </div>

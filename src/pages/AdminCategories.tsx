@@ -112,13 +112,13 @@ export const AdminCategories: React.FC = () => {
 
   const handleDelete = async (category: Category) => {
     console.log('Category object:', category);
-    console.log('Category _id:', category._id);
+    console.log('Category _id:', category.id);
     console.log('Category id (if exists):', (category as any).id);
     
     if (window.confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
       try {
         // Use _id if available, otherwise try id
-        const categoryId = category._id || (category as any).id;
+        const categoryId = category.id || (category as any).id;
         if (!categoryId) {
           console.error('No category ID found:', category);
           alert('Error: Category ID not found');
@@ -134,7 +134,7 @@ export const AdminCategories: React.FC = () => {
   const handleToggleStatus = async (category: Category) => {
     try {
       // Use _id if available, otherwise try id
-      const categoryId = category._id || (category as any).id;
+      const categoryId = category.id || (category as any).id;
       if (!categoryId) {
         console.error('No category ID found for toggle:', category);
         alert('Error: Category ID not found');
@@ -152,13 +152,13 @@ export const AdminCategories: React.FC = () => {
   const handleSave = async (data: CreateCategoryRequest | UpdateCategoryRequest) => {
     if (editingCategory) {
       // Use _id if available, otherwise try id
-      const categoryId = editingCategory._id || (editingCategory as any).id;
+      const categoryId = editingCategory.id;
       if (!categoryId) {
         console.error('No category ID found for save:', editingCategory);
         alert('Error: Category ID not found');
         return;
       }
-      await updateMutation.mutateAsync({ id: categoryId, data });
+      await updateMutation.mutateAsync({ id: String(categoryId), data });
     } else {
       await createMutation.mutateAsync(data as CreateCategoryRequest);
     }
@@ -265,7 +265,7 @@ export const AdminCategories: React.FC = () => {
                 </thead>
                 <tbody>
                   {filteredCategories.map((category) => (
-                    <tr key={category._id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr key={category.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           {category.image && (

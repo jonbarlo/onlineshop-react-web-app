@@ -19,6 +19,10 @@ import {
   Category,
   CreateCategoryRequest,
   UpdateCategoryRequest,
+  Image,
+  ProductImagesSummary,
+  CreateImageData,
+  UpdateImageData,
 } from '@/types';
 
 class ApiService {
@@ -129,6 +133,7 @@ class ApiService {
   }
 
   async createProduct(productData: CreateProductRequest): Promise<ApiResponse<Product>> {
+    console.log('Creating product with data:', JSON.stringify(productData, null, 2));
     const response = await this.api.post('/api/admin/products', productData);
     return response.data;
   }
@@ -237,6 +242,51 @@ class ApiService {
     const response = await this.api.delete(`/api/admin/categories/${id}`);
     console.log(`API Response: /api/admin/categories/${id}`, response.status, response.data);
     return response.data;
+  }
+
+  // Multiple Images Management Methods
+  
+  // Public endpoints
+  async getProductImages(productId: number): Promise<ProductImagesSummary> {
+    console.log(`API Request: GET /api/products/${productId}/images`);
+    const response = await this.api.get(`/api/products/${productId}/images`);
+    console.log(`API Response: /api/products/${productId}/images`, response.status, response.data);
+    return response.data.data;
+  }
+
+  // Admin endpoints
+  async getAdminProductImages(productId: number): Promise<Image[]> {
+    console.log(`API Request: GET /api/admin/products/${productId}/images`);
+    const response = await this.api.get(`/api/admin/products/${productId}/images`);
+    console.log(`API Response: /api/admin/products/${productId}/images`, response.status, response.data);
+    return response.data.data;
+  }
+
+  async addProductImage(productId: number, imageData: CreateImageData): Promise<Image> {
+    console.log(`API Request: POST /api/admin/products/${productId}/images`, imageData);
+    const response = await this.api.post(`/api/admin/products/${productId}/images`, imageData);
+    console.log(`API Response: /api/admin/products/${productId}/images`, response.status, response.data);
+    return response.data.data;
+  }
+
+  async updateProductImage(productId: number, imageId: number, updates: UpdateImageData): Promise<Image> {
+    console.log(`API Request: PUT /api/admin/products/${productId}/images/${imageId}`, updates);
+    const response = await this.api.put(`/api/admin/products/${productId}/images/${imageId}`, updates);
+    console.log(`API Response: /api/admin/products/${productId}/images/${imageId}`, response.status, response.data);
+    return response.data.data;
+  }
+
+  async deleteProductImageById(productId: number, imageId: number): Promise<void> {
+    console.log(`API Request: DELETE /api/admin/products/${productId}/images/${imageId}`);
+    const response = await this.api.delete(`/api/admin/products/${productId}/images/${imageId}`);
+    console.log(`API Response: /api/admin/products/${productId}/images/${imageId}`, response.status, response.data);
+  }
+
+  async reorderProductImages(productId: number, imageIds: number[]): Promise<Image[]> {
+    console.log(`API Request: PUT /api/admin/products/${productId}/images/reorder`, { imageIds });
+    const response = await this.api.put(`/api/admin/products/${productId}/images/reorder`, { imageIds });
+    console.log(`API Response: /api/admin/products/${productId}/images/reorder`, response.status, response.data);
+    return response.data.data;
   }
 }
 

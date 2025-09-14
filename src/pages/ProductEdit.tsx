@@ -7,10 +7,12 @@ import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
-import { ImageUpload } from '@/components/ui/ImageUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
+import { ColorPicker } from '@/components/ui/ColorPicker';
+import { SizeSelector } from '@/components/ui/SizeSelector';
 import { UpdateProductRequest, Category } from '@/types';
+import { AdminImageManager } from '@/components/admin/AdminImageManager';
 
 export const ProductEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +23,6 @@ export const ProductEdit: React.FC = () => {
   console.log('ProductEdit - Current URL:', window.location.href);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
 
   // Fetch categories from database
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
@@ -57,17 +58,20 @@ export const ProductEdit: React.FC = () => {
       name: '',
       description: '',
       price: 0,
-      imageUrl: '',
-      category: '',
+      categoryId: 0,
       isActive: true,
       quantity: 0,
+      color: '',
+      size: '',
     },
   });
 
   // Watch form values for debugging
   const watchedValues = watch();
   console.log('ProductEdit - Current form values:', watchedValues);
-  console.log('ProductEdit - Category value:', watchedValues.category);
+  console.log('ProductEdit - Category value:', watchedValues.categoryId);
+  console.log('ProductEdit - Color value:', watchedValues.color);
+  console.log('ProductEdit - Size value:', watchedValues.size);
 
   // Reset form when product data loads
   React.useEffect(() => {
@@ -76,17 +80,17 @@ export const ProductEdit: React.FC = () => {
       console.log('ProductEdit - Loading product data:', product);
       console.log('ProductEdit - Product category value:', product.category);
       console.log('ProductEdit - Product category type:', typeof product.category);
-      setImageUrl(product.imageUrl);
       
       // Reset form with all values - handle category object
       reset({
         name: product.name,
         description: product.description,
         price: product.price,
-        imageUrl: product.imageUrl,
-        category: (typeof product.category === 'object' && product.category !== null) ? (product.category as any).slug : product.category || '',
+        categoryId: (typeof product.category === 'object' && product.category !== null) ? (product.category as Category).id : 0,
         isActive: product.isActive,
         quantity: product.quantity,
+        color: product.color || '',
+        size: product.size || '',
       });
       
       console.log('ProductEdit - Form reset with category:', product.category);
@@ -98,9 +102,9 @@ export const ProductEdit: React.FC = () => {
     if (data?.data) {
       // Use setTimeout to ensure this runs after the reset
       setTimeout(() => {
-        const categoryValue = data.data ? ((typeof data.data.category === 'object' && data.data.category !== null) ? (data.data.category as any).slug : data.data.category) || '' : '';
-        setValue('category', categoryValue);
-        console.log('ProductEdit - Category setValue called with:', categoryValue);
+        const categoryId = data.data ? ((typeof data.data.category === 'object' && data.data.category !== null) ? (data.data.category as Category).id : 0) : 0;
+        setValue('categoryId', categoryId);
+        console.log('ProductEdit - Category setValue called with:', categoryId);
       }, 100);
     }
   }, [data, setValue]);
@@ -127,23 +131,54 @@ export const ProductEdit: React.FC = () => {
           navigate('/admin/products');
         }, 100);
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         console.log('ProductEdit - Update failed, error:', error);
-        setSubmitError(error.response?.data?.message || 'Failed to update product');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to update product';
+        setSubmitError(errorMessage);
       },
     }
   );
 
-  const handleImageChange = (url: string) => {
-    setImageUrl(url);
-    setValue('imageUrl', url);
-  };
 
   const onSubmit = async (data: UpdateProductRequest) => {
     setIsSubmitting(true);
     setSubmitError(null);
     
+    // Validate required fields
+    if (data.name && !data.name.trim()) {
+      setSubmitError('Product name is required');
+      setIsSubmitting(false);
+      return;
+    }
+    if (data.description && !data.description.trim()) {
+      setSubmitError('Product description is required');
+      setIsSubmitting(false);
+      return;
+    }
+    if (data.description && data.description.trim().length < 10) {
+      setSubmitError('Product description must be at least 10 characters long');
+      setIsSubmitting(false);
+      return;
+    }
+    if (data.categoryId && (!data.categoryId || data.categoryId === 0)) {
+      setSubmitError('Please select a category');
+      setIsSubmitting(false);
+      return;
+    }
+    if (data.price && data.price <= 0) {
+      setSubmitError('Price must be greater than 0');
+      setIsSubmitting(false);
+      return;
+    }
+    if (data.quantity && data.quantity < 0) {
+      setSubmitError('Quantity cannot be negative');
+      setIsSubmitting(false);
+      return;
+    }
+    
     console.log('ProductEdit - Form data being submitted:', data);
+    console.log('ProductEdit - Color value in form data:', data.color);
+    console.log('ProductEdit - Size value in form data:', data.size);
     
     try {
       await updateProductMutation.mutateAsync(data);
@@ -267,10 +302,42 @@ export const ProductEdit: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Color
+                  </label>
+                  <ColorPicker
+                    value={watchedValues.color || ''}
+                    onChange={(color) => setValue('color', color)}
+                    error={errors.color?.message}
+                  />
+                  {/* Hidden input for form registration */}
+                  <input
+                    type="hidden"
+                    {...register('color')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Size
+                  </label>
+                  <SizeSelector
+                    value={watchedValues.size || ''}
+                    onChange={(size) => setValue('size', size)}
+                    error={errors.size?.message}
+                  />
+                  {/* Hidden input for form registration */}
+                  <input
+                    type="hidden"
+                    {...register('size')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
                     Category *
-                    {watchedValues.category && (
+                    {watchedValues.categoryId && watchedValues.categoryId > 0 && (
                       <span className="ml-2 text-sm text-green-600 font-normal">
-                        (Current: {typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).name : watchedValues.category})
+                        (Current: {categories.find(cat => cat.id === watchedValues.categoryId)?.name || 'Unknown'})
                       </span>
                     )}
                   </label>
@@ -280,29 +347,23 @@ export const ProductEdit: React.FC = () => {
                     </div>
                   ) : (
                     <select
-                      value={typeof watchedValues.category === 'object' && watchedValues.category !== null ? (watchedValues.category as any).slug || '' : watchedValues.category || ''}
-                      onChange={(e) => setValue('category', e.target.value)}
+                      value={watchedValues.categoryId || ''}
+                      onChange={(e) => setValue('categoryId', parseInt(e.target.value) || 0)}
                       className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       required
                     >
                       <option value="">Select a category</option>
                       {categories.map((category: Category) => (
-                        <option key={category._id} value={category.slug}>
+                        <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
                       ))}
                     </select>
                   )}
-                  {!watchedValues.category && (
+                  {!watchedValues.categoryId && (
                     <p className="mt-1 text-sm text-error-600">Category is required</p>
                   )}
                 </div>
-
-                <ImageUpload
-                  value={imageUrl}
-                  onChange={handleImageChange}
-                  onError={setSubmitError}
-                />
               </div>
 
               <div className="space-y-4">
@@ -362,6 +423,21 @@ export const ProductEdit: React.FC = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Multiple Images Management */}
+      {data?.data && (
+        <Card>
+          <CardContent className="pt-6">
+            <AdminImageManager 
+              productId={data.data.id} 
+              onImagesChange={(images) => {
+                // Optional: Handle images change if needed
+                console.log('Images updated:', images);
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

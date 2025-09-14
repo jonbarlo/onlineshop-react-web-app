@@ -14,6 +14,20 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatCurrency } from '@/config/app';
 import { useTranslation } from 'react-i18next';
 
+// Helper function to get the best image for display
+const getProductImage = (product: any) => {
+  if (product.images && product.images.length > 0) {
+    const primaryImage = product.images.find((img: any) => img.isPrimary && img.isActive);
+    if (primaryImage) return primaryImage.imageUrl;
+    
+    const activeImages = product.images.filter((img: any) => img.isActive);
+    if (activeImages.length > 0) {
+      return activeImages[0].imageUrl;
+    }
+  }
+  return product.imageUrl || '/placeholder-image.jpg';
+};
+
 export const AdminProducts: React.FC = () => {
   const { t, i18n } = useTranslation();
   // Set page title
@@ -148,7 +162,7 @@ export const AdminProducts: React.FC = () => {
             <Card key={product.id} className="overflow-hidden">
               <div className="aspect-square overflow-hidden relative">
                 <OptimizedImage
-                  src={product.imageUrl}
+                  src={getProductImage(product)}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -253,7 +267,7 @@ export const AdminProducts: React.FC = () => {
               <div className="flex">
                 <div className="w-32 h-32 flex-shrink-0">
                   <OptimizedImage
-                    src={product.imageUrl}
+                    src={getProductImage(product)}
                     alt={product.name}
                     className="w-full h-full object-cover"
                     loading="lazy"

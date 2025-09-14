@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -24,8 +24,30 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  const loadImage = useCallback(() => {
+    const img = new Image();
+    
+    img.onload = () => {
+      setImageSrc(src);
+      setIsLoaded(true);
+      onLoad?.();
+    };
+    
+    img.onerror = () => {
+      setHasError(true);
+      onError?.();
+    };
+    
+    img.src = src;
+  }, [src, onLoad, onError]);
+
   useEffect(() => {
     if (!src) return;
+
+    // Reset loading state when src changes
+    setIsLoaded(false);
+    setHasError(false);
+    setImageSrc(placeholder);
 
     // If loading is eager, load immediately
     if (loading === 'eager') {
@@ -53,24 +75,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
 
     return () => observer.disconnect();
-  }, [src, loading]);
-
-  const loadImage = () => {
-    const img = new Image();
-    
-    img.onload = () => {
-      setImageSrc(src);
-      setIsLoaded(true);
-      onLoad?.();
-    };
-    
-    img.onerror = () => {
-      setHasError(true);
-      onError?.();
-    };
-    
-    img.src = src;
-  };
+  }, [src, loading, loadImage, placeholder]);
 
   return (
     <img

@@ -115,6 +115,43 @@ export interface ImageDeleteResponse {
   timestamp: string;
 }
 
+// Multiple Images Types
+export interface Image {
+  id: number;
+  productId: number;
+  imageUrl: string;
+  altText: string;
+  sortOrder: number;
+  isPrimary: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductImagesSummary {
+  totalImages: number;
+  primaryImage: Image | null;
+  images: Image[];
+}
+
+export interface CreateImageData {
+  imageUrl: string;
+  altText?: string;
+  sortOrder?: number;
+  isPrimary?: boolean;
+}
+
+export interface UpdateImageData {
+  altText?: string;
+  sortOrder?: number;
+  isPrimary?: boolean;
+  isActive?: boolean;
+}
+
+export interface ReorderImagesRequest {
+  imageIds: number[];
+}
+
 // User Types
 export interface User {
   id: number;
@@ -133,17 +170,21 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  imageUrl: string; // Deprecated - use images array
   category: string;
   isActive: boolean;
   quantity: number;
   status: 'available' | 'sold_out';
+  color?: string; // Optional color field (max 50 characters)
+  size?: string; // Optional size field (max 20 characters)
+  images?: Image[]; // New multiple images array
+  primaryImage?: Image | null; // New primary image
   createdAt: string;
   updatedAt: string;
 }
 
 export interface Category {
-  _id: string;
+  id: number;
   name: string;
   description?: string;
   slug: string;
@@ -177,8 +218,10 @@ export interface CreateProductRequest {
   description: string;
   price: number;
   imageUrl: string;
-  category: string;
+  categoryId: number;
   quantity: number;
+  color?: string; // Optional color field (max 50 characters)
+  size?: string; // Optional size field (max 20 characters)
 }
 
 export interface UpdateProductRequest {
@@ -186,9 +229,11 @@ export interface UpdateProductRequest {
   description?: string;
   price?: number;
   imageUrl?: string;
-  category?: string;
+  categoryId?: number;
   isActive?: boolean;
   quantity?: number;
+  color?: string; // Optional color field (max 50 characters)
+  size?: string; // Optional size field (max 20 characters)
 }
 
 // Order Types
@@ -252,6 +297,8 @@ export interface ProductQueryParams {
   search?: string;
   q?: string; // Query parameter for search
   category?: string;
+  color?: string; // Filter by color (case-insensitive partial match)
+  size?: string; // Filter by size (case-insensitive partial match)
 }
 
 export interface OrderQueryParams {

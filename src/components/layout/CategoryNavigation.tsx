@@ -46,7 +46,7 @@ export const CategoryNavigation: React.FC = () => {
   const categories = (categoriesData?.data || [])
     .filter((cat: DbCategory) => cat.isActive === true) // Only show active categories
     .map((cat: DbCategory) => ({
-      id: cat._id || cat.slug,
+      id: cat.id || cat.slug,
       name: cat.name,
       icon: categoryIcons[cat.slug] || categoryIcons.default,
       href: `/category/${cat.slug}`,

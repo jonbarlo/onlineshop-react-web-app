@@ -49,6 +49,8 @@ import { useBrandTheme } from '@/contexts/ThemeContext';
 export const ProductList: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
+  const [colorFilter, setColorFilter] = useState('');
+  const [sizeFilter, setSizeFilter] = useState('');
   const { theme } = useBrandTheme();
   const { t, i18n, ready } = useTranslation();
 
@@ -84,13 +86,16 @@ export const ProductList: React.FC = () => {
   //   }
   // );
 
-  // Fetch products
+  // Fetch products with server-side filtering
   const { data, isLoading, error } = useQuery(
-    ['products'],
+    ['products', search, colorFilter, sizeFilter],
     () => {
       return apiService.getProducts({
         page: 1,
-        limit: 50, // Get more products for client-side filtering
+        limit: 50, // Get more products for filtering
+        search: search || undefined,
+        color: colorFilter || undefined,
+        size: sizeFilter || undefined,
       });
     },
     {
@@ -115,16 +120,8 @@ export const ProductList: React.FC = () => {
   //     color: categoryColors[cat.slug] || categoryColors.default,
   //   }));
   
-  // Client-side filtering
-  const products = search 
-    ? allProducts.filter(product => 
-        product.name.toLowerCase().includes(search.toLowerCase()) ||
-        product.description.toLowerCase().includes(search.toLowerCase()) ||
-        (typeof product.category === 'object' && product.category !== null 
-          ? (product.category as { name: string }).name.toLowerCase().includes(search.toLowerCase())
-          : product.category.toLowerCase().includes(search.toLowerCase()))
-      )
-    : allProducts.slice(0, 12); // Show first 12 products when no search
+  // Use server-filtered products directly
+  const products = allProducts;
 
   // Conditional layout based on theme
   const isActivewearTheme = theme?.name === 'MaluaActiveWear';
@@ -363,9 +360,11 @@ export const ProductList: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search and Filter Bar */}
         <Card className="mb-8">
           <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* Search Bar */}
             <div className="flex justify-center">
               <div className="max-w-md w-full">
                 <div className="relative">
@@ -377,12 +376,63 @@ export const ProductList: React.FC = () => {
                     className="pl-10"
                   />
                 </div>
-                {search && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
-                    Found {products.length} product{products.length !== 1 ? 's' : ''} matching "{search}"
-                  </p>
-                )}
+                </div>
               </div>
+
+              {/* Color and Size Filters */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="max-w-xs w-full">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Filter by Color
+                  </label>
+                  <Input
+                    placeholder="e.g. Red, Blue, #FF0000"
+                    value={colorFilter}
+                    onChange={setColorFilter}
+                    className="w-full"
+                  />
+                </div>
+                <div className="max-w-xs w-full">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Filter by Size
+                  </label>
+                  <Input
+                    placeholder="e.g. Small, Medium, Large"
+                    value={sizeFilter}
+                    onChange={setSizeFilter}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Clear Filters Button */}
+              {(search || colorFilter || sizeFilter) && (
+                <div className="flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearch('');
+                      setColorFilter('');
+                      setSizeFilter('');
+                    }}
+                  >
+                    Clear All Filters
+                  </Button>
+                </div>
+              )}
+
+              {/* Results Summary */}
+              {(search || colorFilter || sizeFilter) && (
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Found {products.length} product{products.length !== 1 ? 's' : ''} 
+                    {search && ` matching "${search}"`}
+                    {colorFilter && ` with color "${colorFilter}"`}
+                    {sizeFilter && ` in size "${sizeFilter}"`}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

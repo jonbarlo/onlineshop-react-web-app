@@ -2,22 +2,25 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from 'react-query';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Upload } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
-import { ImageUpload } from '@/components/ui/ImageUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
+import { ColorPicker } from '@/components/ui/ColorPicker';
+import { SizeSelector } from '@/components/ui/SizeSelector';
 import { CreateProductRequest, Category } from '@/types';
+import { AdminImageManager } from '@/components/admin/AdminImageManager';
 
 export const ProductCreate: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
+  const [createdProductId, setCreatedProductId] = useState<number | null>(null);
+  const [tempImages, setTempImages] = useState<string[]>([]); // Store uploaded image URLs temporarily
 
   // Fetch categories from database
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
@@ -27,39 +30,99 @@ export const ProductCreate: React.FC = () => {
   );
 
   const categories = categoriesData?.data || [];
+  
+  // Debug logging
+  console.log('Categories data:', categoriesData);
+  console.log('Categories array:', categories);
+  console.log('First category:', categories[0]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<CreateProductRequest>({
     defaultValues: {
       name: '',
       description: '',
       price: 0,
-      imageUrl: '',
-      category: '',
+      categoryId: 0,
       quantity: 0,
+      color: '',
+      size: '',
     },
   });
+
+  // Watch form values for color picker
+  const watchedValues = watch();
 
   const createProductMutation = useMutation(
     (productData: CreateProductRequest) => apiService.createProduct(productData),
     {
-      onSuccess: () => {
+      onSuccess: async (response) => {
+        const newProductId = response.data?.id;
+        if (newProductId) {
+          setCreatedProductId(newProductId);
+          
+          // Add all temporary images to the new product
+          if (tempImages.length > 0) {
+            try {
+              for (let i = 0; i < tempImages.length; i++) {
+                const imageUrl = tempImages[i];
+                await apiService.addProductImage(newProductId, {
+                  imageUrl: imageUrl,
+                  altText: `Product image ${i + 1}`,
+                  sortOrder: i,
+                  isPrimary: i === 0 // First image becomes primary
+                });
+              }
+            } catch (error) {
+              console.error('Failed to add images to product:', error);
+              // Don't fail the whole process if image addition fails
+            }
+          }
+        }
         queryClient.invalidateQueries(['admin-products']);
-        navigate('/admin/products');
+        queryClient.invalidateQueries(['products']);
       },
-      onError: (error: any) => {
-        setSubmitError(error.response?.data?.message || 'Failed to create product');
+      onError: (error: unknown) => {
+        console.error('Product creation mutation error:', error);
+        
+        // Type guard for axios error
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string; details?: string } } };
+          console.error('Error response data:', axiosError.response?.data);
+        }
+        
+        // Type guard for Error instance
+        let errorMessage = 'Failed to create product';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string; details?: string } } };
+          errorMessage = axiosError.response?.data?.message || 
+                        axiosError.response?.data?.error || 
+                        axiosError.response?.data?.details ||
+                        'Failed to create product';
+        }
+        
+        setSubmitError(errorMessage);
       },
     }
   );
 
-  const handleImageChange = (url: string) => {
-    setImageUrl(url);
-    setValue('imageUrl', url);
+
+  // Handle temporary image uploads (before product creation)
+  const handleTempImageUpload = async (file: File) => {
+    try {
+      const response = await apiService.uploadProductImage(file);
+      const imageUrl = response.data.imageUrl;
+      setTempImages(prev => [...prev, imageUrl]);
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      setSubmitError('Failed to upload image');
+    }
   };
 
   const onSubmit = async (data: CreateProductRequest) => {
@@ -67,8 +130,50 @@ export const ProductCreate: React.FC = () => {
     setSubmitError(null);
     
     try {
-      await createProductMutation.mutateAsync(data);
+      // Validate required fields
+      if (!data.name.trim()) {
+        setSubmitError('Product name is required');
+        return;
+      }
+      if (!data.description.trim()) {
+        setSubmitError('Product description is required');
+        return;
+      }
+      if (data.description.trim().length < 10) {
+        setSubmitError('Product description must be at least 10 characters long');
+        return;
+      }
+      if (!data.categoryId || data.categoryId === 0) {
+        setSubmitError('Please select a category');
+        return;
+      }
+      if (data.price <= 0) {
+        setSubmitError('Price must be greater than 0');
+        return;
+      }
+      if (data.quantity < 0) {
+        setSubmitError('Quantity cannot be negative');
+        return;
+      }
+      
+      // Convert price to number and ensure proper data types
+      const productData: CreateProductRequest = {
+        ...data,
+        name: data.name.trim(),
+        description: data.description.trim(),
+        price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
+        categoryId: typeof data.categoryId === 'string' ? parseInt(data.categoryId) : data.categoryId,
+        quantity: typeof data.quantity === 'string' ? parseInt(data.quantity) : data.quantity,
+        color: data.color?.trim() || undefined,
+        size: data.size?.trim() || undefined,
+      };
+      
+      console.log('Creating product with data:', productData);
+      console.log('ProductCreate - Color value in form data:', productData.color);
+      console.log('ProductCreate - Size value in form data:', productData.size);
+      await createProductMutation.mutateAsync(productData);
     } catch (error) {
+      console.error('Product creation error:', error);
       // Error handled in mutation
     } finally {
       setIsSubmitting(false);
@@ -154,6 +259,38 @@ export const ProductCreate: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Color
+                  </label>
+                  <ColorPicker
+                    value={watchedValues.color || ''}
+                    onChange={(color) => setValue('color', color)}
+                    error={errors.color?.message}
+                  />
+                  {/* Hidden input for form registration */}
+                  <input
+                    type="hidden"
+                    {...register('color')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Size
+                  </label>
+                  <SizeSelector
+                    value={watchedValues.size || ''}
+                    onChange={(size) => setValue('size', size)}
+                    error={errors.size?.message}
+                  />
+                  {/* Hidden input for form registration */}
+                  <input
+                    type="hidden"
+                    {...register('size')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
                     Category *
                   </label>
                   {categoriesLoading ? (
@@ -162,27 +299,22 @@ export const ProductCreate: React.FC = () => {
                     </div>
                   ) : (
                     <select
-                      {...register('category', { required: 'Category is required' })}
+                      {...register('categoryId', { required: 'Category is required' })}
                       className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      defaultValue=""
                     >
                       <option value="">Select a category</option>
                       {categories.map((category: Category) => (
-                        <option key={category._id} value={category.slug}>
+                        <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
                       ))}
                     </select>
                   )}
-                  {errors.category && (
-                    <p className="mt-1 text-sm text-error-600">{errors.category.message}</p>
+                  {errors.categoryId && (
+                    <p className="mt-1 text-sm text-error-600">{errors.categoryId.message}</p>
                   )}
                 </div>
-
-                <ImageUpload
-                  value={imageUrl}
-                  onChange={handleImageChange}
-                  onError={setSubmitError}
-                />
               </div>
 
               <div className="space-y-4">
@@ -229,6 +361,122 @@ export const ProductCreate: React.FC = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Temporary Multiple Images Upload - Show before product creation */}
+      {!createdProductId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Product Images</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-secondary-600">
+                Upload multiple images for your product. The first image will be used as the main product image.
+              </p>
+              
+              {/* Temporary Images Preview */}
+              {tempImages.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {tempImages.map((imageUrl, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={imageUrl}
+                        alt={`Product image ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-secondary-200"
+                      />
+                      {index === 0 && (
+                        <div className="absolute top-1 left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
+                          Primary
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setTempImages(prev => prev.filter((_, i) => i !== index))}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* File Upload Interface */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300">
+                  Add Images
+                </label>
+
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      handleTempImageUpload(files[0]);
+                    }
+                  }}
+                  className="hidden"
+                  id="temp-image-upload"
+                />
+
+                {/* Upload Area */}
+                <div
+                  className="border-2 border-dashed border-secondary-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 rounded-lg p-6 text-center transition-colors cursor-pointer"
+                  onClick={() => document.getElementById('temp-image-upload')?.click()}
+                >
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="p-3 bg-secondary-100 dark:bg-gray-700 rounded-full">
+                      <Upload className="h-6 w-6 text-secondary-600 dark:text-gray-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-secondary-900 dark:text-white">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-xs text-secondary-500 dark:text-gray-400">
+                        PNG, JPG, GIF, WebP up to 5MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Multiple Images Management - Show after product is created */}
+      {createdProductId && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="mb-4">
+              <Alert type="success" title="Product Created Successfully">
+                Your product has been created. You can now add multiple images to enhance the product display.
+              </Alert>
+            </div>
+            <AdminImageManager 
+              productId={createdProductId} 
+              onImagesChange={(images) => {
+                console.log('Images updated:', images);
+              }}
+            />
+            <div className="mt-6 flex justify-end space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin/products')}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Products
+              </Button>
+              <Button
+                onClick={() => navigate('/admin/products')}
+              >
+                View All Products
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
