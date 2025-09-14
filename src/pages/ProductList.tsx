@@ -103,6 +103,20 @@ export const ProductList: React.FC = () => {
 
   // Handle the actual API response structure
   const allProducts = Array.isArray(data?.data) ? data.data : [];
+
+  // Debug logging
+  console.log('ProductList Debug:', {
+    isLoading,
+    error,
+    hasData: !!data,
+    allProductsLength: allProducts.length,
+    firstProduct: allProducts[0] ? {
+      id: allProducts[0].id,
+      name: allProducts[0].name,
+      hasImages: !!allProducts[0].images,
+      imagesLength: allProducts[0].images?.length || 0
+    } : null
+  });
   
   // Transform database categories to display format - COMMENTED OUT SINCE HIDING CATEGORIES SECTION
   // const categories = (categoriesData?.data || [])

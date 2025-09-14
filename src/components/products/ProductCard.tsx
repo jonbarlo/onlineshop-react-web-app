@@ -60,6 +60,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const availableImages = getAvailableImages();
   const currentImage = getCurrentImage();
 
+  // Debug logging
+  console.log('ProductCard Debug:', {
+    productId: product.id,
+    productName: product.name,
+    hasImages: !!product.images,
+    imagesLength: product.images?.length || 0,
+    availableImagesLength: availableImages.length,
+    currentImageIndex,
+    currentImage,
+    shouldShowArrows: availableImages.length > 1
+  });
+
   // Preload next few images for better UX
   const imageUrls = availableImages.map(img => img.imageUrl);
   useImagePreloader({
@@ -189,27 +201,52 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </p>
           
           {/* Product Attributes */}
-          {(product.color || product.size) && (
+          {((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
             <div className="flex flex-wrap gap-2 mb-3">
-              {product.color && (
+              {/* Colors */}
+              {product.colors && product.colors.length > 0 && (
                 <div className="flex items-center space-x-1.5 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
-                  {product.color.startsWith('#') ? (
-                    <div 
-                      className="w-3 h-3 rounded-full border border-gray-300"
-                      style={{ backgroundColor: product.color }}
-                      title={product.color}
-                    />
-                  ) : null}
-                  <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                    {product.color}
-                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Colors:</span>
+                  <div className="flex items-center space-x-1">
+                    {product.colors.slice(0, 3).map((color, index) => (
+                      <div key={index} className="flex items-center space-x-1">
+                        {color.startsWith('#') ? (
+                          <div 
+                            className="w-3 h-3 rounded-full border border-gray-300"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ) : null}
+                        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                          {color}
+                        </span>
+                        {index < Math.min(product.colors?.length || 0, 3) - 1 && (
+                          <span className="text-xs text-gray-400">,</span>
+                        )}
+                      </div>
+                    ))}
+                    {(product.colors?.length || 0) > 3 && (
+                      <span className="text-xs text-gray-500">+{(product.colors?.length || 0) - 3} more</span>
+                    )}
+                  </div>
                 </div>
               )}
-              {product.size && (
-                <div className="bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
-                  <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                    {product.size}
-                  </span>
+              
+              {/* Sizes */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div className="flex items-center space-x-1.5 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Sizes:</span>
+                  <div className="flex items-center space-x-1">
+                    {product.sizes.slice(0, 4).map((size, index) => (
+                      <span key={index} className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                        {size}
+                        {index < Math.min(product.sizes?.length || 0, 4) - 1 && ','}
+                      </span>
+                    ))}
+                    {(product.sizes?.length || 0) > 4 && (
+                      <span className="text-xs text-gray-500">+{(product.sizes?.length || 0) - 4} more</span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

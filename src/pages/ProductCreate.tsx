@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { ColorPicker } from '@/components/ui/ColorPicker';
-import { SizeSelector } from '@/components/ui/SizeSelector';
+import { ColorArrayInput } from '@/components/ui/ColorArrayInput';
+import { SizeArrayInput } from '@/components/ui/SizeArrayInput';
 import { CreateProductRequest, Category } from '@/types';
 import { AdminImageManager } from '@/components/admin/AdminImageManager';
 
@@ -49,8 +49,8 @@ export const ProductCreate: React.FC = () => {
       price: 0,
       categoryId: 0,
       quantity: 0,
-      color: '',
-      size: '',
+      colors: [],
+      sizes: [],
     },
   });
 
@@ -164,13 +164,13 @@ export const ProductCreate: React.FC = () => {
         price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
         categoryId: typeof data.categoryId === 'string' ? parseInt(data.categoryId) : data.categoryId,
         quantity: typeof data.quantity === 'string' ? parseInt(data.quantity) : data.quantity,
-        color: data.color?.trim() || undefined,
-        size: data.size?.trim() || undefined,
+        colors: data.colors || [],
+        sizes: data.sizes || [],
       };
       
       console.log('Creating product with data:', productData);
-      console.log('ProductCreate - Color value in form data:', productData.color);
-      console.log('ProductCreate - Size value in form data:', productData.size);
+      console.log('ProductCreate - Colors value in form data:', productData.colors);
+      console.log('ProductCreate - Sizes value in form data:', productData.sizes);
       await createProductMutation.mutateAsync(productData);
     } catch (error) {
       console.error('Product creation error:', error);
@@ -258,34 +258,16 @@ export const ProductCreate: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Color
-                  </label>
-                  <ColorPicker
-                    value={watchedValues.color || ''}
-                    onChange={(color) => setValue('color', color)}
-                    error={errors.color?.message}
-                  />
-                  {/* Hidden input for form registration */}
-                  <input
-                    type="hidden"
-                    {...register('color')}
+                  <ColorArrayInput
+                    colors={watchedValues.colors || []}
+                    onChange={(colors) => setValue('colors', colors)}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Size
-                  </label>
-                  <SizeSelector
-                    value={watchedValues.size || ''}
-                    onChange={(size) => setValue('size', size)}
-                    error={errors.size?.message}
-                  />
-                  {/* Hidden input for form registration */}
-                  <input
-                    type="hidden"
-                    {...register('size')}
+                  <SizeArrayInput
+                    sizes={watchedValues.sizes || []}
+                    onChange={(sizes) => setValue('sizes', sizes)}
                   />
                 </div>
 

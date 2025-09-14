@@ -12,9 +12,23 @@ import './index.css'
 // Register Service Worker for image caching
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
       .then((registration) => {
-        console.log('SW registered: ', registration);
+        console.log('SW v4 registered: ', registration);
+        
+        // Only handle updates, don't force reload
+        registration.addEventListener('updatefound', () => {
+          console.log('SW: Update found, installing new version');
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('SW: New version installed, reloading page');
+                window.location.reload();
+              }
+            });
+          }
+        });
       })
       .catch((registrationError) => {
         console.log('SW registration failed: ', registrationError);

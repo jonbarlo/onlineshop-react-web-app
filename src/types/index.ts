@@ -175,8 +175,8 @@ export interface Product {
   isActive: boolean;
   quantity: number;
   status: 'available' | 'sold_out';
-  color?: string; // Optional color field (max 50 characters)
-  size?: string; // Optional size field (max 20 characters)
+  colors?: string[]; // Array of color options (e.g., ["Blue", "Red", "Green"])
+  sizes?: string[]; // Array of size options (e.g., ["S", "M", "L", "XL"])
   images?: Image[]; // New multiple images array
   primaryImage?: Image | null; // New primary image
   createdAt: string;
@@ -220,8 +220,8 @@ export interface CreateProductRequest {
   imageUrl: string;
   categoryId: number;
   quantity: number;
-  color?: string; // Optional color field (max 50 characters)
-  size?: string; // Optional size field (max 20 characters)
+  colors?: string[]; // Array of color options
+  sizes?: string[]; // Array of size options
 }
 
 export interface UpdateProductRequest {
@@ -232,8 +232,8 @@ export interface UpdateProductRequest {
   categoryId?: number;
   isActive?: boolean;
   quantity?: number;
-  color?: string; // Optional color field (max 50 characters)
-  size?: string; // Optional size field (max 20 characters)
+  colors?: string[]; // Array of color options
+  sizes?: string[]; // Array of size options
 }
 
 // Order Types
@@ -297,8 +297,8 @@ export interface ProductQueryParams {
   search?: string;
   q?: string; // Query parameter for search
   category?: string;
-  color?: string; // Filter by color (case-insensitive partial match)
-  size?: string; // Filter by size (case-insensitive partial match)
+  colors?: string; // Comma-separated list of colors to filter by
+  sizes?: string; // Comma-separated list of sizes to filter by
 }
 
 export interface OrderQueryParams {

@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { ColorPicker } from '@/components/ui/ColorPicker';
-import { SizeSelector } from '@/components/ui/SizeSelector';
+import { ColorArrayInput } from '@/components/ui/ColorArrayInput';
+import { SizeArrayInput } from '@/components/ui/SizeArrayInput';
 import { UpdateProductRequest, Category } from '@/types';
 import { AdminImageManager } from '@/components/admin/AdminImageManager';
 
@@ -61,8 +61,8 @@ export const ProductEdit: React.FC = () => {
       categoryId: 0,
       isActive: true,
       quantity: 0,
-      color: '',
-      size: '',
+      colors: [],
+      sizes: [],
     },
   });
 
@@ -70,8 +70,8 @@ export const ProductEdit: React.FC = () => {
   const watchedValues = watch();
   console.log('ProductEdit - Current form values:', watchedValues);
   console.log('ProductEdit - Category value:', watchedValues.categoryId);
-  console.log('ProductEdit - Color value:', watchedValues.color);
-  console.log('ProductEdit - Size value:', watchedValues.size);
+  console.log('ProductEdit - Colors value:', watchedValues.colors);
+  console.log('ProductEdit - Sizes value:', watchedValues.sizes);
 
   // Reset form when product data loads
   React.useEffect(() => {
@@ -89,8 +89,8 @@ export const ProductEdit: React.FC = () => {
         categoryId: (typeof product.category === 'object' && product.category !== null) ? (product.category as Category).id : 0,
         isActive: product.isActive,
         quantity: product.quantity,
-        color: product.color || '',
-        size: product.size || '',
+        colors: product.colors || [],
+        sizes: product.sizes || [],
       });
       
       console.log('ProductEdit - Form reset with category:', product.category);
@@ -177,8 +177,8 @@ export const ProductEdit: React.FC = () => {
     }
     
     console.log('ProductEdit - Form data being submitted:', data);
-    console.log('ProductEdit - Color value in form data:', data.color);
-    console.log('ProductEdit - Size value in form data:', data.size);
+    console.log('ProductEdit - Colors value in form data:', data.colors);
+    console.log('ProductEdit - Sizes value in form data:', data.sizes);
     
     try {
       await updateProductMutation.mutateAsync(data);
@@ -301,34 +301,16 @@ export const ProductEdit: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Color
-                  </label>
-                  <ColorPicker
-                    value={watchedValues.color || ''}
-                    onChange={(color) => setValue('color', color)}
-                    error={errors.color?.message}
-                  />
-                  {/* Hidden input for form registration */}
-                  <input
-                    type="hidden"
-                    {...register('color')}
+                  <ColorArrayInput
+                    colors={watchedValues.colors || []}
+                    onChange={(colors) => setValue('colors', colors)}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Size
-                  </label>
-                  <SizeSelector
-                    value={watchedValues.size || ''}
-                    onChange={(size) => setValue('size', size)}
-                    error={errors.size?.message}
-                  />
-                  {/* Hidden input for form registration */}
-                  <input
-                    type="hidden"
-                    {...register('size')}
+                  <SizeArrayInput
+                    sizes={watchedValues.sizes || []}
+                    onChange={(sizes) => setValue('sizes', sizes)}
                   />
                 </div>
 

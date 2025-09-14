@@ -1,12 +1,25 @@
-// Service Worker for Image Caching
-const CACHE_NAME = 'malua-images-v1';
-const IMAGE_CACHE_NAME = 'malua-image-cache-v1';
+// Service Worker for Image Caching - v4
+const CACHE_NAME = 'malua-images-v4';
+const IMAGE_CACHE_NAME = 'malua-image-cache-v4';
+
+console.log('SW: Service Worker v4 loaded');
 
 // Cache image URLs
 const cacheImage = async (request, response) => {
-  if (response.status === 200) {
-    const cache = await caches.open(IMAGE_CACHE_NAME);
-    await cache.put(request, response.clone());
+  console.log('SW: cacheImage called for:', request.url);
+  console.log('SW: response status:', response.status);
+  console.log('SW: response bodyUsed:', response.bodyUsed);
+  
+  if (response.status === 200 && !response.bodyUsed) {
+    try {
+      const cache = await caches.open(IMAGE_CACHE_NAME);
+      await cache.put(request, response);
+      console.log('SW: Successfully cached image:', request.url);
+    } catch (error) {
+      console.error('SW: Error caching image:', error);
+    }
+  } else {
+    console.log('SW: Skipping cache - status:', response.status, 'bodyUsed:', response.bodyUsed);
   }
   return response;
 };
@@ -33,12 +46,20 @@ self.addEventListener('fetch', (event) => {
 
       // Fetch from network and cache
       return fetch(request).then((response) => {
+        console.log('SW: Fetch response for:', request.url, 'status:', response.status);
+        console.log('SW: Response bodyUsed before clone:', response.bodyUsed);
+        
+        // Clone the response before caching to avoid "body already used" error
+        const responseClone = response.clone();
+        console.log('SW: Response cloned, original bodyUsed:', response.bodyUsed, 'clone bodyUsed:', responseClone.bodyUsed);
+        
         // Cache successful responses
         if (response.status === 200) {
-          cacheImage(request, response);
+          cacheImage(request, responseClone);
         }
         return response;
-      }).catch(() => {
+      }).catch((error) => {
+        console.error('SW: Fetch error for:', request.url, error);
         // Return placeholder for failed requests
         return new Response(
           '<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#f3f4f6"/><text x="50%" y="50%" font-family="Arial" font-size="14" fill="#99a3af" text-anchor="middle" dy=".3em">Image not available</text></svg>',

@@ -147,35 +147,52 @@ export const ProductDetail: React.FC = () => {
           </div>
 
           {/* Product Attributes */}
-          {(product.color || product.size) && (
+          {((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">
                 Product Details
               </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {product.color && (
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-secondary-600 dark:text-gray-400">Color:</span>
-                    <div className="flex items-center space-x-2">
-                      {product.color.startsWith('#') ? (
-                        <div 
-                          className="w-5 h-5 rounded-full border border-gray-300 shadow-sm"
-                          style={{ backgroundColor: product.color }}
-                          title={product.color}
-                        />
-                      ) : null}
-                      <span className="text-sm text-secondary-900 dark:text-white font-medium">
-                        {product.color}
-                      </span>
+              <div className="space-y-4">
+                {/* Colors */}
+                {product.colors && product.colors.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-secondary-600 dark:text-gray-400 mb-2 block">
+                      Available Colors:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {product.colors.map((color, index) => (
+                        <div key={index} className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                          {color.startsWith('#') ? (
+                            <div 
+                              className="w-4 h-4 rounded-full border border-gray-300 shadow-sm"
+                              style={{ backgroundColor: color }}
+                              title={color}
+                            />
+                          ) : null}
+                          <span className="text-sm text-secondary-900 dark:text-white font-medium">
+                            {color}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-                {product.size && (
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-secondary-600 dark:text-gray-400">Size:</span>
-                    <span className="text-sm text-secondary-900 dark:text-white font-medium">
-                      {product.size}
+                
+                {/* Sizes */}
+                {product.sizes && product.sizes.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-secondary-600 dark:text-gray-400 mb-2 block">
+                      Available Sizes:
                     </span>
+                    <div className="flex flex-wrap gap-2">
+                      {product.sizes.map((size, index) => (
+                        <div key={index} className="bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                          <span className="text-sm text-secondary-900 dark:text-white font-medium">
+                            {size}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
