@@ -7,15 +7,18 @@ import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { ProductGallery } from './ProductGallery';
+import { ProductVariantSelector } from './ProductVariantSelector';
 import { useCartContext } from '@/contexts/CartContext';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/config/app';
+import { ProductVariant } from '@/types';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { addToCart, getItemQuantity, updateQuantity } = useCartContext();
   const { t } = useTranslation();
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   const { data, isLoading, error } = useQuery(
     ['product', id],
@@ -26,18 +29,30 @@ export const ProductDetail: React.FC = () => {
   );
 
   const product = data?.data;
-  const quantityInCart = product ? getItemQuantity(product.id) : 0;
+  const quantityInCart = product ? getItemQuantity(product.id, selectedVariant?.id) : 0;
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product, quantity);
+      // Check if product has variants and variant is selected
+      if (product.variants && product.variants.length > 0) {
+        if (!selectedVariant) {
+          alert('Please select a color and size');
+          return;
+        }
+        if (selectedVariant.quantity < quantity) {
+          alert(`Only ${selectedVariant.quantity} items available in ${selectedVariant.color} - ${selectedVariant.size}`);
+          return;
+        }
+      }
+      
+      addToCart(product, quantity, selectedVariant);
       setQuantity(1);
     }
   };
 
   const handleUpdateQuantity = (newQuantity: number) => {
     if (product && newQuantity >= 0) {
-      updateQuantity(product.id, newQuantity);
+      updateQuantity(product.id, selectedVariant?.id || null, newQuantity);
     }
   };
 
@@ -146,8 +161,22 @@ export const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Product Attributes */}
-          {((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
+          {/* Product Variants */}
+          {product.variants && product.variants.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">
+                Select Options
+              </h2>
+              <ProductVariantSelector
+                variants={product.variants}
+                selectedVariant={selectedVariant}
+                onVariantSelect={setSelectedVariant}
+              />
+            </div>
+          )}
+
+          {/* Fallback: Product Attributes (for backward compatibility) */}
+          {(!product.variants || product.variants.length === 0) && ((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">
                 Product Details

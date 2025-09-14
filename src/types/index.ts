@@ -164,6 +164,19 @@ export interface AuthResponse {
   user: User;
 }
 
+// Product Variant Types
+export interface ProductVariant {
+  id: number;
+  productId: number;
+  color: string;
+  size: string;
+  quantity: number;
+  sku: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Product Types
 export interface Product {
   id: number;
@@ -173,10 +186,11 @@ export interface Product {
   imageUrl: string; // Deprecated - use images array
   category: string;
   isActive: boolean;
-  quantity: number;
+  quantity: number; // Overall product quantity (for backward compatibility)
   status: 'available' | 'sold_out';
-  colors?: string[]; // Array of color options (e.g., ["Blue", "Red", "Green"])
-  sizes?: string[]; // Array of size options (e.g., ["S", "M", "L", "XL"])
+  colors?: string[]; // Array of color options (e.g., ["Blue", "Red", "Green"]) - for backward compatibility
+  sizes?: string[]; // Array of size options (e.g., ["S", "M", "L", "XL"]) - for backward compatibility
+  variants?: ProductVariant[]; // New variants array with individual inventory
   images?: Image[]; // New multiple images array
   primaryImage?: Image | null; // New primary image
   createdAt: string;
@@ -220,8 +234,7 @@ export interface CreateProductRequest {
   imageUrl: string;
   categoryId: number;
   quantity: number;
-  colors?: string[]; // Array of color options
-  sizes?: string[]; // Array of size options
+  variants?: ProductVariant[]; // Array of product variants
 }
 
 export interface UpdateProductRequest {
@@ -234,6 +247,7 @@ export interface UpdateProductRequest {
   quantity?: number;
   colors?: string[]; // Array of color options
   sizes?: string[]; // Array of size options
+  variants?: ProductVariant[]; // Array of product variants
 }
 
 // Order Types
@@ -242,6 +256,9 @@ export type OrderStatus = 'new' | 'paid' | 'ready_for_delivery';
 export interface OrderItem {
   id: number;
   productId: number;
+  productVariantId?: number; // New: ID of the specific variant ordered
+  selectedColor?: string; // New: Color selected by customer
+  selectedSize?: string; // New: Size selected by customer
   quantity: number;
   unitPrice: number;
   product: {
@@ -249,6 +266,7 @@ export interface OrderItem {
     name: string;
     imageUrl: string;
   };
+  productVariant?: ProductVariant; // New: Full variant details
 }
 
 export interface Order {
@@ -273,6 +291,8 @@ export interface CreateOrderRequest {
   items: {
     productId: number;
     quantity: number;
+    selectedColor?: string; // New: Color selection for variant
+    selectedSize?: string; // New: Size selection for variant
   }[];
 }
 
@@ -312,6 +332,7 @@ export interface OrderQueryParams {
 export interface CartItem {
   product: Product;
   quantity: number;
+  variant?: ProductVariant | null; // Selected variant for this cart item
 }
 
 export interface Cart {

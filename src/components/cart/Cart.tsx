@@ -71,7 +71,7 @@ export const Cart: React.FC = () => {
             <CardContent className="p-0">
               {cart.items.map((item) => (
                 <CartItem
-                  key={item.product.id}
+                  key={`${item.product.id}-${item.variant?.id || 'no-variant'}`}
                   item={item}
                   onUpdateQuantity={updateQuantity}
                   onRemove={removeFromCart}

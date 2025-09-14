@@ -51,6 +51,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
         items: cart.items.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
+          selectedColor: item.variant?.color,
+          selectedSize: item.variant?.size,
         })),
       };
 
@@ -156,11 +158,18 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose, onSuccess }) => {
               <h3 className="font-semibold text-secondary-900 mb-2">{t('checkout.order_summary')}</h3>
               <div className="space-y-2 text-sm">
                 {cart.items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between items-center">
+                  <div key={`${item.product.id}-${item.variant?.id || 'no-variant'}`} className="flex justify-between items-center">
                     <div className="flex-1">
-                      <span>
-                        {item.product.name} x {item.quantity}
-                      </span>
+                      <div className="flex flex-col">
+                        <span>
+                          {item.product.name} x {item.quantity}
+                        </span>
+                        {item.variant && (
+                          <span className="text-xs text-secondary-600">
+                            {item.variant.color} - {item.variant.size}
+                          </span>
+                        )}
+                      </div>
                       {item.product.status === 'sold_out' && (
                         <span className="ml-2 text-xs text-red-600 font-medium">{t('checkout.sold_out')}</span>
                       )}

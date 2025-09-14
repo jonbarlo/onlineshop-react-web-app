@@ -41,19 +41,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   // Get current image based on currentImageIndex
   const getCurrentImage = () => {
-    if (product.images && product.images.length > 0) {
-      const activeImages = product.images.filter(img => img.isActive);
-      if (activeImages.length > 0) {
-        return activeImages[currentImageIndex]?.imageUrl || activeImages[0].imageUrl;
-      }
+    const availableImages = getAvailableImages();
+    if (availableImages.length > 0) {
+      return availableImages[currentImageIndex]?.imageUrl || availableImages[0].imageUrl;
     }
     return product.imageUrl || '/placeholder-image.jpg';
   };
 
   const getAvailableImages = () => {
+    console.log('🔍 getAvailableImages - product.images:', product.images);
+    console.log('🔍 getAvailableImages - product.images length:', product.images?.length);
+    
     if (product.images && product.images.length > 0) {
-      return product.images.filter(img => img.isActive);
+      // First try to get active images
+      const activeImages = product.images.filter(img => img.isActive);
+      console.log('🔍 getAvailableImages - activeImages:', activeImages);
+      console.log('🔍 getAvailableImages - activeImages length:', activeImages.length);
+      
+      if (activeImages.length > 0) {
+        console.log('🔍 getAvailableImages - returning activeImages');
+        return activeImages;
+      }
+      // Fallback: if no active images, use all images
+      console.log('🔍 getAvailableImages - no active images, returning all images');
+      return product.images;
     }
+    console.log('🔍 getAvailableImages - no images, returning empty array');
     return [];
   };
 
@@ -66,6 +79,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     productName: product.name,
     hasImages: !!product.images,
     imagesLength: product.images?.length || 0,
+    allImages: product.images,
+    availableImages: availableImages,
     availableImagesLength: availableImages.length,
     currentImageIndex,
     currentImage,
@@ -104,7 +119,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }`}>
       <div className="relative">
         <Link to={`/products/${product.id}`} className="block">
-          <div className="aspect-square overflow-hidden rounded-t-2xl relative">
+          <div 
+            className="aspect-square overflow-hidden rounded-t-2xl relative"
+            onClick={() => {
+              console.log('🖼️ Image clicked - navigating to product detail');
+              console.log('🖼️ Product ID:', product.id);
+              console.log('🖼️ Current image:', currentImage);
+              console.log('🖼️ Available images:', availableImages);
+            }}
+          >
             <OptimizedImage
               key={`${product.id}-${currentImageIndex}`}
               src={currentImage}
@@ -124,19 +147,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <>
             <button
               onClick={handlePreviousImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full z-20 shadow-lg"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={handleNextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full z-20 shadow-lg"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             </button>
             
             {/* Image counter */}
-            <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full z-20 shadow-lg">
               {currentImageIndex + 1} / {availableImages.length}
             </div>
           </>
@@ -200,8 +223,39 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.description}
           </p>
           
-          {/* Product Attributes */}
-          {((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
+          {/* Product Variants */}
+          {product.variants && product.variants.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex items-center space-x-1.5 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Options:</span>
+                <div className="flex items-center space-x-1">
+                  {product.variants.slice(0, 3).map((variant, index) => (
+                    <div key={index} className="flex items-center space-x-1">
+                      {variant.color.startsWith('#') ? (
+                        <div 
+                          className="w-3 h-3 rounded-full border border-gray-300"
+                          style={{ backgroundColor: variant.color }}
+                          title={variant.color}
+                        />
+                      ) : null}
+                      <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                        {variant.color} - {variant.size}
+                      </span>
+                      {index < Math.min(product.variants?.length || 0, 3) - 1 && (
+                        <span className="text-xs text-gray-400">,</span>
+                      )}
+                    </div>
+                  ))}
+                  {(product.variants?.length || 0) > 3 && (
+                    <span className="text-xs text-gray-500">+{(product.variants?.length || 0) - 3} more</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Fallback: Product Attributes (for backward compatibility) */}
+          {(!product.variants || product.variants.length === 0) && ((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
             <div className="flex flex-wrap gap-2 mb-3">
               {/* Colors */}
               {product.colors && product.colors.length > 0 && (
@@ -278,33 +332,45 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Link>
       
       <div className="p-6 pt-0">
-        <Button
-          onClick={handleAddToCart}
-          disabled={product.status === 'sold_out' || product.quantity === 0}
-          className={`w-full transition-all duration-200 ${
-            product.status === 'sold_out' 
-              ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600' 
-              : 'btn-primary'
-          }`}
-          size="sm"
-        >
-          {product.status === 'sold_out' ? (
-            <>
+        {product.variants && product.variants.length > 0 ? (
+          <Link to={`/products/${product.id}`}>
+            <Button
+              className="w-full transition-all duration-200 btn-primary"
+              size="sm"
+            >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Notify When Available
-            </>
-          ) : quantityInCart > 0 ? (
-            <>
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              In Cart ({quantityInCart})
-            </>
-          ) : (
-            <>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('buttons.add_to_cart')}
-            </>
-          )}
-        </Button>
+              Select Options
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            onClick={handleAddToCart}
+            disabled={product.status === 'sold_out' || product.quantity === 0}
+            className={`w-full transition-all duration-200 ${
+              product.status === 'sold_out' 
+                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600' 
+                : 'btn-primary'
+            }`}
+            size="sm"
+          >
+            {product.status === 'sold_out' ? (
+              <>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Notify When Available
+              </>
+            ) : quantityInCart > 0 ? (
+              <>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                In Cart ({quantityInCart})
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('buttons.add_to_cart')}
+              </>
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

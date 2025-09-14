@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/Button';
 
 interface CartItemProps {
   item: CartItemType;
-  onUpdateQuantity: (productId: number, quantity: number) => void;
-  onRemove: (productId: number) => void;
+  onUpdateQuantity: (productId: number, variantId: number | null, quantity: number) => void;
+  onRemove: (productId: number, variantId: number | null) => void;
 }
 
 export const CartItem: React.FC<CartItemProps> = ({
@@ -14,13 +14,13 @@ export const CartItem: React.FC<CartItemProps> = ({
   onUpdateQuantity,
   onRemove,
 }) => {
-  const { product, quantity } = item;
+  const { product, quantity, variant } = item;
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity <= 0) {
-      onRemove(product.id);
+      onRemove(product.id, variant?.id || null);
     } else {
-      onUpdateQuantity(product.id, newQuantity);
+      onUpdateQuantity(product.id, variant?.id || null, newQuantity);
     }
   };
 
@@ -38,6 +38,16 @@ export const CartItem: React.FC<CartItemProps> = ({
         <h3 className="font-medium text-secondary-900 truncate">
           {product.name}
         </h3>
+        {variant && (
+          <div className="flex items-center space-x-2 mt-1">
+            <span className="text-xs text-secondary-600">
+              Color: <span className="font-medium">{variant.color}</span>
+            </span>
+            <span className="text-xs text-secondary-600">
+              Size: <span className="font-medium">{variant.size}</span>
+            </span>
+          </div>
+        )}
         <p className="text-sm text-secondary-600">
           ${product.price.toFixed(2)} each
         </p>
@@ -68,7 +78,7 @@ export const CartItem: React.FC<CartItemProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => onRemove(product.id)}
+          onClick={() => onRemove(product.id, variant?.id || null)}
           className="text-error-600 hover:text-error-700 p-1"
         >
           <Trash2 className="h-4 w-4" />

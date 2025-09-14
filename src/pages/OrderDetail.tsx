@@ -218,6 +218,20 @@ export const OrderDetail: React.FC = () => {
                       <h3 className="font-medium text-secondary-900">
                         {item.product.name}
                       </h3>
+                      {(item.selectedColor || item.selectedSize) && (
+                        <div className="flex items-center space-x-2 mt-1">
+                          {item.selectedColor && (
+                            <span className="text-xs text-secondary-600">
+                              Color: <span className="font-medium">{item.selectedColor}</span>
+                            </span>
+                          )}
+                          {item.selectedSize && (
+                            <span className="text-xs text-secondary-600">
+                              Size: <span className="font-medium">{item.selectedSize}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-sm text-secondary-500">
                         Quantity: {item.quantity}
                       </p>

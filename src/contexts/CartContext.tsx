@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Cart, CartItem, Product } from '@/types';
+import { Cart, CartItem, Product, ProductVariant } from '@/types';
 
 const CART_STORAGE_KEY = 'simpleShop_cart';
 
 interface CartContextType {
   cart: Cart;
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number, variant?: ProductVariant | null) => void;
+  removeFromCart: (productId: number, variantId: number | null) => void;
+  updateQuantity: (productId: number, variantId: number | null, quantity: number) => void;
   clearCart: () => void;
-  getItemQuantity: (productId: number) => number;
+  getItemQuantity: (productId: number, variantId?: number) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -61,8 +61,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return { totalItems, totalAmount };
   }, []);
 
-  const addToCart = useCallback((product: Product, quantity: number = 1) => {
-    console.log('CartProvider: addToCart called with:', { product: product.name, quantity });
+  const addToCart = useCallback((product: Product, quantity: number = 1, variant?: ProductVariant | null) => {
+    console.log('CartProvider: addToCart called with:', { product: product.name, quantity, variant });
     
     // Check if product is available
     if (product.status === 'sold_out') {
@@ -70,16 +70,18 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       return;
     }
     
-    // Check if there's enough inventory
-    if (product.quantity < quantity) {
-      console.warn('CartProvider: Not enough inventory for product:', product.name, 'requested:', quantity, 'available:', product.quantity);
+    // Check inventory - use variant quantity if available, otherwise product quantity
+    const availableQuantity = variant ? variant.quantity : product.quantity;
+    if (availableQuantity < quantity) {
+      console.warn('CartProvider: Not enough inventory for product:', product.name, 'requested:', quantity, 'available:', availableQuantity);
       return;
     }
     
     setCart(prevCart => {
       console.log('CartProvider: Current cart before adding:', prevCart);
       const existingItemIndex = prevCart.items.findIndex(
-        item => item.product.id === product.id
+        item => item.product.id === product.id && 
+        ((!item.variant && !variant) || (item.variant?.id === variant?.id))
       );
 
       let newItems: CartItem[];
@@ -90,9 +92,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         const currentQuantity = prevCart.items[existingItemIndex].quantity;
         const totalQuantity = currentQuantity + quantity;
         
-        if (totalQuantity > product.quantity) {
-          console.warn('CartProvider: Adding quantity would exceed inventory:', product.name, 'current:', currentQuantity, 'adding:', quantity, 'available:', product.quantity);
-          newQuantity = product.quantity - currentQuantity;
+        if (totalQuantity > availableQuantity) {
+          console.warn('CartProvider: Adding quantity would exceed inventory:', product.name, 'current:', currentQuantity, 'adding:', quantity, 'available:', availableQuantity);
+          newQuantity = availableQuantity - currentQuantity;
           if (newQuantity <= 0) {
             console.warn('CartProvider: Cannot add more of this product, inventory exceeded');
             return prevCart;
@@ -107,7 +109,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         );
       } else {
         // Add new item
-        newItems = [...prevCart.items, { product, quantity: newQuantity }];
+        newItems = [...prevCart.items, { product, quantity: newQuantity, variant }];
       }
 
       const { totalItems, totalAmount } = calculateTotals(newItems);
@@ -121,9 +123,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     });
   }, [calculateTotals]);
 
-  const removeFromCart = useCallback((productId: number) => {
+  const removeFromCart = useCallback((productId: number, variantId: number | null) => {
     setCart(prevCart => {
-      const newItems = prevCart.items.filter(item => item.product.id !== productId);
+      const newItems = prevCart.items.filter(item => 
+        !(item.product.id === productId && 
+          ((!item.variant && variantId === null) || (item.variant?.id === variantId)))
+      );
       const { totalItems, totalAmount } = calculateTotals(newItems);
       return {
         items: newItems,
@@ -133,24 +138,29 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     });
   }, [calculateTotals]);
 
-  const updateQuantity = useCallback((productId: number, quantity: number) => {
+  const updateQuantity = useCallback((productId: number, variantId: number | null, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, variantId);
       return;
     }
 
     setCart(prevCart => {
-      const item = prevCart.items.find(item => item.product.id === productId);
+      const item = prevCart.items.find(item => 
+        item.product.id === productId && 
+        ((!item.variant && variantId === null) || (item.variant?.id === variantId))
+      );
       if (!item) return prevCart;
       
       // Check if the new quantity exceeds available inventory
-      if (quantity > item.product.quantity) {
-        console.warn('CartProvider: Cannot update quantity, exceeds inventory:', item.product.name, 'requested:', quantity, 'available:', item.product.quantity);
+      const availableQuantity = item.variant ? item.variant.quantity : item.product.quantity;
+      if (quantity > availableQuantity) {
+        console.warn('CartProvider: Cannot update quantity, exceeds inventory:', item.product.name, 'requested:', quantity, 'available:', availableQuantity);
         return prevCart;
       }
 
       const newItems = prevCart.items.map(item =>
-        item.product.id === productId
+        (item.product.id === productId && 
+         ((!item.variant && variantId === null) || (item.variant?.id === variantId)))
           ? { ...item, quantity }
           : item
       );
@@ -171,8 +181,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     });
   }, []);
 
-  const getItemQuantity = useCallback((productId: number) => {
-    const item = cart.items.find(item => item.product.id === productId);
+  const getItemQuantity = useCallback((productId: number, variantId?: number) => {
+    const item = cart.items.find(item => 
+      item.product.id === productId && 
+      ((!item.variant && !variantId) || (item.variant?.id === variantId))
+    );
     return item ? item.quantity : 0;
   }, [cart.items]);
 

@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { ColorArrayInput } from '@/components/ui/ColorArrayInput';
-import { SizeArrayInput } from '@/components/ui/SizeArrayInput';
-import { CreateProductRequest, Category } from '@/types';
+import { ProductVariantManager } from '@/components/admin/ProductVariantManager';
+import { CreateProductRequest, Category, ProductVariant } from '@/types';
 import { AdminImageManager } from '@/components/admin/AdminImageManager';
 
 export const ProductCreate: React.FC = () => {
@@ -40,8 +39,6 @@ export const ProductCreate: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
   } = useForm<CreateProductRequest>({
     defaultValues: {
       name: '',
@@ -49,13 +46,11 @@ export const ProductCreate: React.FC = () => {
       price: 0,
       categoryId: 0,
       quantity: 0,
-      colors: [],
-      sizes: [],
     },
   });
-
-  // Watch form values for color picker
-  const watchedValues = watch();
+  
+  // Variant management state
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
 
   const createProductMutation = useMutation(
     (productData: CreateProductRequest) => apiService.createProduct(productData),
@@ -164,13 +159,11 @@ export const ProductCreate: React.FC = () => {
         price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
         categoryId: typeof data.categoryId === 'string' ? parseInt(data.categoryId) : data.categoryId,
         quantity: typeof data.quantity === 'string' ? parseInt(data.quantity) : data.quantity,
-        colors: data.colors || [],
-        sizes: data.sizes || [],
+        variants: variants,
       };
       
       console.log('Creating product with data:', productData);
-      console.log('ProductCreate - Colors value in form data:', productData.colors);
-      console.log('ProductCreate - Sizes value in form data:', productData.sizes);
+      console.log('ProductCreate - Variants:', productData.variants);
       await createProductMutation.mutateAsync(productData);
     } catch (error) {
       console.error('Product creation error:', error);
@@ -257,17 +250,10 @@ export const ProductCreate: React.FC = () => {
                   </p>
                 </div>
 
-                <div>
-                  <ColorArrayInput
-                    colors={watchedValues.colors || []}
-                    onChange={(colors) => setValue('colors', colors)}
-                  />
-                </div>
-
-                <div>
-                  <SizeArrayInput
-                    sizes={watchedValues.sizes || []}
-                    onChange={(sizes) => setValue('sizes', sizes)}
+                <div className="col-span-2">
+                  <ProductVariantManager
+                    variants={variants}
+                    onChange={setVariants}
                   />
                 </div>
 

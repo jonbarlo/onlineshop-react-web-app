@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
-import { ColorArrayInput } from '@/components/ui/ColorArrayInput';
-import { SizeArrayInput } from '@/components/ui/SizeArrayInput';
-import { UpdateProductRequest, Category } from '@/types';
+import { ProductVariantManager } from '@/components/admin/ProductVariantManager';
+import { UpdateProductRequest, Category, ProductVariant } from '@/types';
 import { AdminImageManager } from '@/components/admin/AdminImageManager';
 
 export const ProductEdit: React.FC = () => {
@@ -23,6 +22,7 @@ export const ProductEdit: React.FC = () => {
   console.log('ProductEdit - Current URL:', window.location.href);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
 
   // Fetch categories from database
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
@@ -40,8 +40,9 @@ export const ProductEdit: React.FC = () => {
       enabled: !!id,
       onSuccess: (response) => {
         console.log('ProductEdit - API Response received:', response);
-        console.log('ProductEdit - Product data:', response.data);
-        console.log('ProductEdit - Category from API:', response.data?.category);
+      console.log('ProductEdit - Product data:', response.data);
+      console.log('ProductEdit - Category from API:', response.data?.category);
+      console.log('ProductEdit - FULL API RESPONSE:', JSON.stringify(response.data, null, 2));
       }
     }
   );
@@ -61,8 +62,6 @@ export const ProductEdit: React.FC = () => {
       categoryId: 0,
       isActive: true,
       quantity: 0,
-      colors: [],
-      sizes: [],
     },
   });
 
@@ -70,8 +69,9 @@ export const ProductEdit: React.FC = () => {
   const watchedValues = watch();
   console.log('ProductEdit - Current form values:', watchedValues);
   console.log('ProductEdit - Category value:', watchedValues.categoryId);
-  console.log('ProductEdit - Colors value:', watchedValues.colors);
-  console.log('ProductEdit - Sizes value:', watchedValues.sizes);
+  console.log('ProductEdit - Variants state:', variants);
+  console.log('ProductEdit - Data from API:', data?.data);
+  console.log('ProductEdit - Product variants from data:', data?.data?.variants);
 
   // Reset form when product data loads
   React.useEffect(() => {
@@ -80,6 +80,11 @@ export const ProductEdit: React.FC = () => {
       console.log('ProductEdit - Loading product data:', product);
       console.log('ProductEdit - Product category value:', product.category);
       console.log('ProductEdit - Product category type:', typeof product.category);
+      console.log('ProductEdit - Product has variants property:', 'variants' in product);
+      console.log('ProductEdit - Product variants value:', product.variants);
+      console.log('ProductEdit - Product variants type:', typeof product.variants);
+      console.log('ProductEdit - Product variants length:', product.variants?.length);
+      console.log('ProductEdit - All product keys:', Object.keys(product));
       
       // Reset form with all values - handle category object
       reset({
@@ -89,9 +94,11 @@ export const ProductEdit: React.FC = () => {
         categoryId: (typeof product.category === 'object' && product.category !== null) ? (product.category as Category).id : 0,
         isActive: product.isActive,
         quantity: product.quantity,
-        colors: product.colors || [],
-        sizes: product.sizes || [],
       });
+      
+      // Set variants from product data
+      console.log('ProductEdit - Product variants from API:', product.variants);
+      setVariants(product.variants || []);
       
       console.log('ProductEdit - Form reset with category:', product.category);
     }
@@ -177,11 +184,14 @@ export const ProductEdit: React.FC = () => {
     }
     
     console.log('ProductEdit - Form data being submitted:', data);
-    console.log('ProductEdit - Colors value in form data:', data.colors);
-    console.log('ProductEdit - Sizes value in form data:', data.sizes);
+    console.log('ProductEdit - Variants being submitted:', variants);
     
     try {
-      await updateProductMutation.mutateAsync(data);
+      const productData = {
+        ...data,
+        variants: variants,
+      };
+      await updateProductMutation.mutateAsync(productData);
     } catch (error) {
       // Error handled in mutation
     } finally {
@@ -300,17 +310,10 @@ export const ProductEdit: React.FC = () => {
                   </p>
                 </div>
 
-                <div>
-                  <ColorArrayInput
-                    colors={watchedValues.colors || []}
-                    onChange={(colors) => setValue('colors', colors)}
-                  />
-                </div>
-
-                <div>
-                  <SizeArrayInput
-                    sizes={watchedValues.sizes || []}
-                    onChange={(sizes) => setValue('sizes', sizes)}
+                <div className="col-span-2">
+                  <ProductVariantManager
+                    variants={variants}
+                    onChange={setVariants}
                   />
                 </div>
 
