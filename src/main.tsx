@@ -9,6 +9,19 @@ import App from './App.tsx'
 import './i18n.ts' // Initialize i18n
 import './index.css'
 
+// Register Service Worker for image caching
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

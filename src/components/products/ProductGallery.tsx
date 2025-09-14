@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { Image, ProductImagesSummary } from '@/types';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { useImagePreloader } from '@/hooks/useImagePreloader';
 
 interface ProductGalleryProps {
   productId: number;
@@ -57,6 +58,14 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
   useEffect(() => {
     fetchImages();
   }, [fetchImages]);
+
+  // Preload all gallery images for better UX
+  const imageUrls = images.map(img => img.imageUrl);
+  useImagePreloader({
+    images: imageUrls,
+    preloadCount: images.length, // Preload all gallery images
+    priority: true // High priority for gallery images
+  });
 
   // Auto-play functionality
   useEffect(() => {

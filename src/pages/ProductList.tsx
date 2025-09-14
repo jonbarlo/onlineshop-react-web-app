@@ -49,8 +49,6 @@ import { useBrandTheme } from '@/contexts/ThemeContext';
 export const ProductList: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
-  const [colorFilter, setColorFilter] = useState('');
-  const [sizeFilter, setSizeFilter] = useState('');
   const { theme } = useBrandTheme();
   const { t, i18n, ready } = useTranslation();
 
@@ -86,16 +84,14 @@ export const ProductList: React.FC = () => {
   //   }
   // );
 
-  // Fetch products with server-side filtering
+  // Fetch products with search only
   const { data, isLoading, error } = useQuery(
-    ['products', search, colorFilter, sizeFilter],
+    ['products', search],
     () => {
       return apiService.getProducts({
         page: 1,
         limit: 50, // Get more products for filtering
         search: search || undefined,
-        color: colorFilter || undefined,
-        size: sizeFilter || undefined,
       });
     },
     {
@@ -360,11 +356,9 @@ export const ProductList: React.FC = () => {
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
+        {/* Search Bar */}
         <Card className="mb-8">
           <CardContent className="p-6">
-            <div className="space-y-4">
-              {/* Search Bar */}
             <div className="flex justify-center">
               <div className="max-w-md w-full">
                 <div className="relative">
@@ -376,64 +370,18 @@ export const ProductList: React.FC = () => {
                     className="pl-10"
                   />
                 </div>
-                </div>
               </div>
-
-              {/* Color and Size Filters */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <div className="max-w-xs w-full">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Filter by Color
-                  </label>
-                  <Input
-                    placeholder="e.g. Red, Blue, #FF0000"
-                    value={colorFilter}
-                    onChange={setColorFilter}
-                    className="w-full"
-                  />
-                </div>
-                <div className="max-w-xs w-full">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Filter by Size
-                  </label>
-                  <Input
-                    placeholder="e.g. Small, Medium, Large"
-                    value={sizeFilter}
-                    onChange={setSizeFilter}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Clear Filters Button */}
-              {(search || colorFilter || sizeFilter) && (
-                <div className="flex justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSearch('');
-                      setColorFilter('');
-                      setSizeFilter('');
-                    }}
-                  >
-                    Clear All Filters
-                  </Button>
-                </div>
-              )}
-
-              {/* Results Summary */}
-              {(search || colorFilter || sizeFilter) && (
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Found {products.length} product{products.length !== 1 ? 's' : ''} 
-                    {search && ` matching "${search}"`}
-                    {colorFilter && ` with color "${colorFilter}"`}
-                    {sizeFilter && ` in size "${sizeFilter}"`}
-                  </p>
-                </div>
-              )}
             </div>
+
+            {/* Results Summary */}
+            {search && (
+              <div className="text-center mt-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Found {products.length} product{products.length !== 1 ? 's' : ''} 
+                  {search && ` matching "${search}"`}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
         

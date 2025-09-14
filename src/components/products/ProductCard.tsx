@@ -4,6 +4,7 @@ import { ShoppingCart, Plus, Heart, Star, ChevronLeft, ChevronRight } from 'luci
 import { Product } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { useCartContext } from '@/contexts/CartContext';
 import { formatCurrency } from '@/config/app';
 import { useTranslation } from 'react-i18next';
@@ -58,6 +59,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const availableImages = getAvailableImages();
   const currentImage = getCurrentImage();
+
+  // Preload next few images for better UX
+  const imageUrls = availableImages.map(img => img.imageUrl);
+  useImagePreloader({
+    images: imageUrls,
+    preloadCount: 3,
+    priority: false
+  });
 
   const handlePreviousImage = (e: React.MouseEvent) => {
     e.preventDefault();
