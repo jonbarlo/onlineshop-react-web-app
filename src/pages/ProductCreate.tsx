@@ -32,7 +32,7 @@ export const ProductCreate: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
+    watch,
   } = useForm<CreateProductRequest>({
     defaultValues: {
       name: '',
@@ -44,12 +44,41 @@ export const ProductCreate: React.FC = () => {
     },
   });
 
+  // Watch form values for SKU generation
+  const watchedValues = watch();
+
   const createProductMutation = useMutation(
     (productData: CreateProductRequest) => apiService.createProduct(productData),
     {
-      onSuccess: () => {
+      onSuccess: async (response) => {
+        const newProductId = response.data?.id;
+        if (newProductId) {
+          setCreatedProductId(newProductId);
+          
+          // Add all temporary images to the new product
+          if (tempImages.length > 0) {
+            try {
+              for (let i = 0; i < tempImages.length; i++) {
+                const imageUrl = tempImages[i];
+                await apiService.addProductImage(newProductId, {
+                  imageUrl: imageUrl,
+                  altText: `Product image ${i + 1}`,
+                  sortOrder: i,
+                  isPrimary: i === 0 // First image becomes primary
+                });
+              }
+            } catch (error) {
+              console.error('Failed to add images to product:', error);
+              // Don't fail the whole process if image addition fails
+            }
+          }
+        }
+        // Invalidate and refetch all products queries
         queryClient.invalidateQueries(['admin-products']);
-        navigate('/admin/products');
+        queryClient.invalidateQueries(['products']);
+        queryClient.refetchQueries({ predicate: (query) => 
+          query.queryKey[0] === 'admin-products' || query.queryKey[0] === 'products'
+        });
       },
       onError: (error: any) => {
         setSubmitError(error.response?.data?.message || 'Failed to create product');
@@ -67,7 +96,57 @@ export const ProductCreate: React.FC = () => {
     setSubmitError(null);
     
     try {
-      await createProductMutation.mutateAsync(data);
+      // Validate required fields
+      if (!data.name.trim()) {
+        setSubmitError('Product name is required');
+        return;
+      }
+      if (!data.description.trim()) {
+        setSubmitError('Product description is required');
+        return;
+      }
+      if (data.description.trim().length < 10) {
+        setSubmitError('Product description must be at least 10 characters long');
+        return;
+      }
+      if (!data.categoryId || data.categoryId === 0) {
+        setSubmitError('Please select a category');
+        return;
+      }
+      if (data.price <= 0) {
+        setSubmitError('Price must be greater than 0');
+        return;
+      }
+      if (data.quantity < 0) {
+        setSubmitError('Quantity cannot be negative');
+        return;
+      }
+      
+      // Clean up variants before sending to API - backend expects only basic fields
+      const cleanedVariants = variants.map(variant => ({
+        color: variant.color,
+        size: variant.size,
+        quantity: variant.quantity
+        // Don't send SKU - let backend handle it
+      }));
+
+      console.log('ProductCreate - Original variants:', variants);
+      console.log('ProductCreate - Cleaned variants:', cleanedVariants);
+
+      // Convert price to number and ensure proper data types
+      const productData = {
+        ...data,
+        name: data.name.trim(),
+        description: data.description.trim(),
+        price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
+        categoryId: typeof data.categoryId === 'string' ? parseInt(data.categoryId) : data.categoryId,
+        quantity: typeof data.quantity === 'string' ? parseInt(data.quantity) : data.quantity,
+        // Always include variants if we have them
+        variants: cleanedVariants
+      } as CreateProductRequest;
+      
+      console.log('Creating product with data:', productData);
+      await createProductMutation.mutateAsync(productData);
     } catch (error) {
       // Error handled in mutation
     } finally {
@@ -150,6 +229,14 @@ export const ProductCreate: React.FC = () => {
                   <p className="mt-1 text-xs text-secondary-500">
                     Set to 0 to mark as sold out initially
                   </p>
+                </div>
+
+                <div className="col-span-2">
+                  <ProductVariantManager
+                    variants={variants}
+                    onChange={setVariants}
+                    productName={watchedValues.name}
+                  />
                 </div>
 
                 <div>

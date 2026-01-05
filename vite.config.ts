@@ -11,11 +11,11 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 3001,
     host: true,
     proxy: {
       '/api': {
-        target: 'https://api.shop.506software.com',
+        target: 'https://api.malua.506software.com',
         changeOrigin: true,
         secure: true,
       },

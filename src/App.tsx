@@ -35,10 +35,12 @@ const MaluaActivewearProductDetail = isMaluaActivewearTheme
   : React.lazy(() => Promise.resolve({ default: () => <div>Theme not available</div> }));
 
 function App() {
-  console.log('App component rendered');
-  console.log('Theme:', import.meta.env.VITE_THEME_NAME);
-  console.log('Is MALUA theme:', isMaluaActivewearTheme);
+  // console.log('App component rendered');
+  // console.log('Theme:', import.meta.env.VITE_THEME_NAME);
+  // console.log('Is MALUA theme:', isMaluaActivewearTheme);
   
+  console.log('Current URL:', window.location.href);
+  console.log('Current pathname:', window.location.pathname);
   return (
     <Routes>
       {/* Public Routes */}

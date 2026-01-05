@@ -11,7 +11,6 @@ import {
   Edit,
   Plus,
   Package,
-  Users,
   AlertTriangle,
   TrendingUp,
   BarChart3,
@@ -105,11 +104,12 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
-  // Product Statistics Cards
+  // Product Statistics Cards - Enhanced with Apple HIG and POS conventions
   const productStatCards = [
     {
       title: 'Total Products',
       value: statistics.totalProducts || 0,
+      subtitle: t('admin.products'),
       icon: Package,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -117,23 +117,26 @@ export const Dashboard: React.FC = () => {
     {
       title: 'Active Products',
       value: statistics.activeProducts || 0,
+      subtitle: t('admin.active'),
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
-      title: 'Low Stock',
+      title: t('admin.low_stock_alert'),
       value: statistics.lowStockProducts || 0,
+      subtitle: t('admin.qty_le_5'),
       icon: AlertTriangle,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
     {
-      title: 'Total Customers',
-      value: statistics.totalCustomers || 0,
-      icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      title: t('admin.out_of_stock'),
+      value: statistics.soldOutProducts || 0,
+      subtitle: t('admin.qty_equals_0'),
+      icon: AlertTriangle,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
     },
   ];
 
@@ -147,8 +150,8 @@ export const Dashboard: React.FC = () => {
       bgColor: 'bg-green-50',
     },
     {
-      title: 'Average Order Value',
-      value: `$${performance.averageOrderValue || '0'}`,
+      title: t('admin.average_order_value'),
+      value: formatCurrency(performance.averageOrderValue || 0),
       icon: DollarSign,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -276,6 +279,11 @@ export const Dashboard: React.FC = () => {
                       <p className="text-2xl font-bold text-secondary-900">
                         {stat.value}
                       </p>
+                      {stat.subtitle && (
+                        <p className="text-xs text-secondary-500 mt-1">
+                          {stat.subtitle}
+                        </p>
+                      )}
                     </div>
                     <div className={`p-3 rounded-full ${stat.bgColor}`}>
                       <Icon className={`h-6 w-6 ${stat.color}`} />

@@ -5,6 +5,7 @@ import { apiService } from '@/services/api';
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<{ success: boolean; error: string | null }>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +28,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     token: null,
     isAuthenticated: false,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize auth state from localStorage
   useEffect(() => {
@@ -51,6 +53,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('user');
       }
     }
+    
+    // Always set loading to false after checking localStorage
+    setIsLoading(false);
   }, []);
 
   const login = useCallback(async (username: string, password: string) => {
@@ -109,6 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     ...authState,
     login,
     logout,
+    isLoading,
   };
 
   console.log('AuthProvider: Rendering with auth state:', { isAuthenticated: authState.isAuthenticated, user: !!authState.user, token: !!authState.token });

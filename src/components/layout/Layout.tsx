@@ -8,6 +8,8 @@ export const Layout: React.FC = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   
+  console.log('Layout rendered with:', { pathname: location.pathname, isAdminRoute });
+  
   // Set dynamic page title based on route
   useDocumentTitle();
 

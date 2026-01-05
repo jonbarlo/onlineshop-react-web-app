@@ -138,8 +138,15 @@ class ApiService {
     const endpoint = `/api/admin/products/${id}`;
     
     try {
+      console.log('=== DEBUG: API SERVICE ===');
       console.log(`Updating product with endpoint: ${endpoint}`);
       console.log('Product data being sent:', JSON.stringify(productData, null, 2));
+      console.log('Product data type:', typeof productData);
+      console.log('Product data keys:', Object.keys(productData));
+      if (productData.variants) {
+        console.log('Variants array length:', productData.variants.length);
+        console.log('Variants array:', JSON.stringify(productData.variants, null, 2));
+      }
       const response = await this.api.put(endpoint, productData);
       console.log(`Product update successful with endpoint: ${endpoint}`);
       return response.data;
@@ -212,6 +219,14 @@ class ApiService {
 
   // Category Management Methods
   async getCategories(): Promise<{ success: boolean; data: Category[]; message: string }> {
+    console.log('API Request: GET /api/categories');
+    const response = await this.api.get('/api/categories');
+    console.log('API Response: /api/categories', response.status, response.data);
+    return response.data;
+  }
+
+  // Admin Category Management Methods (for admin panel)
+  async getAdminCategories(): Promise<{ success: boolean; data: Category[]; message: string }> {
     console.log('API Request: GET /api/admin/categories');
     const response = await this.api.get('/api/admin/categories');
     console.log('API Response: /api/admin/categories', response.status, response.data);

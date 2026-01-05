@@ -30,8 +30,8 @@ export const AdminCategories: React.FC = () => {
 
   // Fetch categories
   const { data: categoriesData, isLoading, error } = useQuery(
-    ['categories'],
-    () => apiService.getCategories(),
+    ['admin-categories'],
+    () => apiService.getAdminCategories(),
     {
       refetchOnWindowFocus: false,
     }

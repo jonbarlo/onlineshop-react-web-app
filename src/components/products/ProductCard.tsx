@@ -9,9 +9,10 @@ import { formatCurrency } from '@/config/app';
 
 interface ProductCardProps {
   product: Product;
+  isAdmin?: boolean; // Hide low stock warning when used in admin context
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, isAdmin = false }) => {
   const { addToCart, getItemQuantity, cart } = useCartContext();
   const [quantityInCart, setQuantityInCart] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -35,6 +36,81 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     setIsWishlisted(!isWishlisted);
   };
 
+  // Get current image based on currentImageIndex
+  const getCurrentImage = () => {
+    const availableImages = getAvailableImages();
+    if (availableImages.length > 0) {
+      return availableImages[currentImageIndex]?.imageUrl || availableImages[0].imageUrl;
+    }
+    return product.imageUrl || '/placeholder-image.jpg';
+  };
+
+  const getAvailableImages = () => {
+    console.log('🔍 getAvailableImages - product.images:', product.images);
+    console.log('🔍 getAvailableImages - product.images length:', product.images?.length);
+    
+    if (product.images && product.images.length > 0) {
+      // First try to get active images
+      const activeImages = product.images.filter(img => img.isActive);
+      console.log('🔍 getAvailableImages - activeImages:', activeImages);
+      console.log('🔍 getAvailableImages - activeImages length:', activeImages.length);
+      
+      if (activeImages.length > 0) {
+        console.log('🔍 getAvailableImages - returning activeImages');
+        return activeImages;
+      }
+      // Fallback: if no active images, use all images
+      console.log('🔍 getAvailableImages - no active images, returning all images');
+      return product.images;
+    }
+    console.log('🔍 getAvailableImages - no images, returning empty array');
+    return [];
+  };
+
+  const availableImages = getAvailableImages();
+  const currentImage = getCurrentImage();
+
+  // Debug logging
+  console.log('ProductCard Debug:', {
+    productId: product.id,
+    productName: product.name,
+    hasImages: !!product.images,
+    imagesLength: product.images?.length || 0,
+    allImages: product.images,
+    availableImages: availableImages,
+    availableImagesLength: availableImages.length,
+    currentImageIndex,
+    currentImage,
+    shouldShowArrows: availableImages.length > 1,
+    productQuantity: product.quantity,
+    variants: product.variants,
+    variantsLength: product.variants?.length || 0
+  });
+
+  // Preload next few images for better UX
+  const imageUrls = availableImages.map(img => img.imageUrl);
+  useImagePreloader({
+    images: imageUrls,
+    preloadCount: 3,
+    priority: false
+  });
+
+  const handlePreviousImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex(prev => 
+      prev === 0 ? availableImages.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex(prev => 
+      prev === availableImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
   return (
     <div className={`product-card group relative ${
       product.status === 'sold_out' 
@@ -54,50 +130,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               }`}
               loading="lazy"
             />
-            
-            {/* Sold Out Overlay */}
-            {product.status === 'sold_out' && (
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent flex items-end justify-center pb-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                  <span className="text-white text-sm font-semibold">Currently Unavailable</span>
-                </div>
-              </div>
-            )}
           </div>
+        </Link>
+        
+        {/* Low Stock Warning - only show in non-admin context */}
+        {!isAdmin && (() => {
+          // Calculate total available quantity from variants
+          const totalVariantQuantity = product.variants?.reduce((total, variant) => total + (variant.quantity || 0), 0) || 0;
+          const displayQuantity = product.variants && product.variants.length > 0 ? totalVariantQuantity : product.quantity;
           
-          {/* Wishlist Button */}
-          <button
-            onClick={handleWishlist}
-            className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-soft hover:bg-white hover:shadow-medium transition-all duration-200 opacity-0 group-hover:opacity-100"
-          >
-            <Heart 
-              className={`h-4 w-4 ${
-                isWishlisted 
-                  ? 'text-red-500 fill-current' 
-                  : 'text-gray-600 hover:text-red-500'
-              }`} 
-            />
-          </button>
-
-          {/* Status Badge */}
-          {product.status === 'sold_out' && (
-            <div className="absolute top-3 left-3 z-10">
-              <div className="bg-gray-800/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-semibold shadow-lg border border-gray-700/50">
-                Sold Out
-              </div>
-            </div>
-          )}
-          
-          {/* Low Stock Warning */}
-          {product.status === 'available' && product.quantity <= 5 && product.quantity > 0 && (
+          return product.status === 'available' && displayQuantity <= 5 && displayQuantity > 0 && (
             <div className="absolute top-3 left-3 z-10">
               <div className="bg-amber-500/95 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-semibold shadow-lg">
-                Only {product.quantity} left!
+{t('admin.qty')}: {displayQuantity} • {t('admin.low_stock_alert')}
               </div>
             </div>
-          )}
-        </div>
-        
+          );
+        })()}
+      </div>
+      
+      <Link to={`/products/${product.id}`} className="block">
         <div className="p-6">
           <div className="flex items-start justify-between mb-3">
             <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
@@ -113,14 +165,103 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.description}
           </p>
           
-          {/* Quantity Display */}
-          {product.status === 'available' && (
-            <div className="mb-3">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {product.quantity > 10 ? 'In Stock' : `${product.quantity} in stock`}
-              </span>
+          {/* Product Variants */}
+          {product.variants && product.variants.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex items-center space-x-1.5 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Options:</span>
+                <div className="flex items-center space-x-1">
+                  {product.variants.slice(0, 3).map((variant, index) => (
+                    <div key={index} className="flex items-center space-x-1">
+                      {variant.color.startsWith('#') ? (
+                        <div 
+                          className="w-3 h-3 rounded-full border border-gray-300"
+                          style={{ backgroundColor: variant.color }}
+                          title={variant.color}
+                        />
+                      ) : null}
+                      <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                        {!variant.color.startsWith('#') && variant.color} - {variant.size} • {t('admin.qty')}: {variant.quantity}
+                      </span>
+                      {index < Math.min(product.variants?.length || 0, 3) - 1 && (
+                        <span className="text-xs text-gray-400">,</span>
+                      )}
+                    </div>
+                  ))}
+                  {(product.variants?.length || 0) > 3 && (
+                    <span className="text-xs text-gray-500">+{(product.variants?.length || 0) - 3} more</span>
+                  )}
+                </div>
+              </div>
             </div>
           )}
+
+          {/* Fallback: Product Attributes (for backward compatibility) */}
+          {(!product.variants || product.variants.length === 0) && ((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {/* Colors */}
+              {product.colors && product.colors.length > 0 && (
+                <div className="flex items-center space-x-1.5 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Colors:</span>
+                  <div className="flex items-center space-x-1">
+                    {product.colors.slice(0, 3).map((color, index) => (
+                      <div key={index} className="flex items-center space-x-1">
+                        {color.startsWith('#') ? (
+                          <div 
+                            className="w-3 h-3 rounded-full border border-gray-300"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ) : null}
+                        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                          {!color.startsWith('#') && color}
+                        </span>
+                        {index < Math.min(product.colors?.length || 0, 3) - 1 && (
+                          <span className="text-xs text-gray-400">,</span>
+                        )}
+                      </div>
+                    ))}
+                    {(product.colors?.length || 0) > 3 && (
+                      <span className="text-xs text-gray-500">+{(product.colors?.length || 0) - 3} more</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Sizes */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div className="flex items-center space-x-1.5 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Sizes:</span>
+                  <div className="flex items-center space-x-1">
+                    {product.sizes.slice(0, 4).map((size, index) => (
+                      <span key={index} className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                        {size}
+                        {index < Math.min(product.sizes?.length || 0, 4) - 1 && ','}
+                      </span>
+                    ))}
+                    {(product.sizes?.length || 0) > 4 && (
+                      <span className="text-xs text-gray-500">+{(product.sizes?.length || 0) - 4} more</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Quantity Display */}
+          {product.status === 'available' && (() => {
+            // Calculate total available quantity from variants
+            const totalVariantQuantity = product.variants?.reduce((total, variant) => total + (variant.quantity || 0), 0) || 0;
+            const displayQuantity = product.variants && product.variants.length > 0 ? totalVariantQuantity : product.quantity;
+            
+            return (
+              <div className="mb-3">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {displayQuantity > 10 ? 'In Stock' : `${displayQuantity} in stock`}
+                </span>
+              </div>
+            );
+          })()}
           
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-baseline space-x-1">

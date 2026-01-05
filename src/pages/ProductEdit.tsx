@@ -113,13 +113,18 @@ export const ProductEdit: React.FC = () => {
         console.log('ProductEdit - Invalidating queries...');
         
         // Invalidate all related queries more aggressively
+        queryClient.invalidateQueries(['admin-product', id]);
         queryClient.invalidateQueries(['product', id]);
         queryClient.invalidateQueries(['admin-products']);
         queryClient.invalidateQueries(['products']);
         queryClient.invalidateQueries(['products', 'category']);
         
-        // Force refetch of the products list
-        queryClient.refetchQueries(['admin-products']);
+        // Force refetch of all products queries (with any parameters)
+        queryClient.refetchQueries({ predicate: (query) => 
+          query.queryKey[0] === 'admin-products' || 
+          query.queryKey[0] === 'products' ||
+          query.queryKey[0] === 'admin-product'
+        });
         
         // Wait a moment for cache to update before navigating
         setTimeout(() => {
@@ -139,14 +144,89 @@ export const ProductEdit: React.FC = () => {
     setValue('imageUrl', url);
   };
 
-  const onSubmit = async (data: UpdateProductRequest) => {
+  const onSubmit = async (formData: UpdateProductRequest) => {
     setIsSubmitting(true);
     setSubmitError(null);
     
-    console.log('ProductEdit - Form data being submitted:', data);
+    // Validate required fields
+    if (formData.name && !formData.name.trim()) {
+      setSubmitError('Product name is required');
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.description && !formData.description.trim()) {
+      setSubmitError('Product description is required');
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.description && formData.description.trim().length < 10) {
+      setSubmitError('Product description must be at least 10 characters long');
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.categoryId && (!formData.categoryId || formData.categoryId === 0)) {
+      setSubmitError('Please select a category');
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.price && formData.price <= 0) {
+      setSubmitError('Price must be greater than 0');
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.quantity && formData.quantity < 0) {
+      setSubmitError('Quantity cannot be negative');
+      setIsSubmitting(false);
+      return;
+    }
+    
+      console.log('=== DEBUG: PRODUCT EDIT SUBMISSION ===');
+      console.log('ProductEdit - Form data being submitted:', formData);
+      console.log('ProductEdit - Variants being submitted:', variants);
+      console.log('ProductEdit - Raw variants data:', JSON.stringify(variants, null, 2));
     
     try {
-      await updateProductMutation.mutateAsync(data);
+      // Only send variants if they've been modified from original
+      const originalVariants = data?.data?.variants || [];
+      const variantsModified = variants.length !== originalVariants.length || 
+        variants.some(variant => !originalVariants.some((orig: ProductVariant) => 
+          orig.color === variant.color && 
+          orig.size === variant.size && 
+          orig.quantity === variant.quantity
+        ));
+
+      console.log('=== DEBUG: VARIANT COMPARISON ===');
+      console.log('ProductEdit - Original variants count:', originalVariants.length);
+      console.log('ProductEdit - Original variants raw:', JSON.stringify(originalVariants, null, 2));
+      console.log('ProductEdit - Current variants count:', variants.length);
+      console.log('ProductEdit - Current variants raw:', JSON.stringify(variants, null, 2));
+      console.log('ProductEdit - Variants modified:', variantsModified);
+
+      const productData = { ...formData } as any;
+      
+      if (variantsModified) {
+        // Send variants only if they've been modified
+        const cleanedVariants = variants.map(variant => ({
+          color: variant.color,
+          size: variant.size,
+          quantity: variant.quantity
+        }));
+        
+        console.log('=== DEBUG: SENDING VARIANTS ===');
+        console.log('ProductEdit - Sending variants (modified):', cleanedVariants);
+        console.log('ProductEdit - Cleaned variants raw:', JSON.stringify(cleanedVariants, null, 2));
+        productData.variants = cleanedVariants;
+      } else {
+        console.log('=== DEBUG: NOT SENDING VARIANTS ===');
+        console.log('ProductEdit - Not sending variants (unchanged)');
+        // Don't include variants field at all
+      }
+      
+      console.log('=== DEBUG: FINAL PAYLOAD ===');
+      console.log('ProductEdit - Final payload:', JSON.stringify(productData, null, 2));
+      console.log('ProductEdit - Payload size:', JSON.stringify(productData).length, 'bytes');
+      
+      await updateProductMutation.mutateAsync(productData);
     } catch (error) {
       // Error handled in mutation
     } finally {
@@ -263,6 +343,14 @@ export const ProductEdit: React.FC = () => {
                   <p className="mt-1 text-xs text-secondary-500">
                     Set to 0 to mark as sold out
                   </p>
+                </div>
+
+                <div className="col-span-2">
+                  <ProductVariantManager
+                    variants={variants}
+                    onChange={setVariants}
+                    productName={watchedValues.name}
+                  />
                 </div>
 
                 <div>

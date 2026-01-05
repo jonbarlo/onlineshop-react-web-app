@@ -10,6 +10,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Alert } from '@/components/ui/Alert';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { ProductCard } from '@/components/products/ProductCard';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatCurrency } from '@/config/app';
 
@@ -42,6 +43,12 @@ export const AdminProducts: React.FC = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['admin-products']);
+        queryClient.invalidateQueries(['products']);
+        queryClient.refetchQueries({ predicate: (query) => 
+          query.queryKey[0] === 'admin-products' || 
+          query.queryKey[0] === 'products' ||
+          query.queryKey[0] === 'admin-product'
+        });
       },
     }
   );
@@ -129,105 +136,60 @@ export const AdminProducts: React.FC = () => {
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
-              <div className="aspect-square overflow-hidden relative">
-                <OptimizedImage
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                {/* Status Badge */}
-                <div className="absolute top-2 right-2">
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full backdrop-blur-sm ${
-                      product.status === 'sold_out'
-                        ? 'bg-gray-500 text-white'
-                        : product.quantity <= 5
-                        ? 'bg-yellow-500 text-white'
-                        : 'bg-green-500 text-white'
-                    }`}
-                  >
-                    {product.status === 'sold_out' ? 'Sold Out' : 
-                     product.quantity <= 5 ? 'Low Stock' : 'In Stock'}
-                  </span>
-                </div>
+            <div key={product.id} className="relative group">
+               {/* Use ProductCard for consistent image carousel */}
+               <ProductCard product={product} isAdmin={true} />
+              
+              {/* Admin Action Overlay */}
+              <div className="absolute top-3 right-3 z-30 flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/admin/products/${product.id}/edit`)}
+                  className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteProduct(product.id, product.name)}
+                  className="bg-white/90 backdrop-blur-sm hover:bg-red-50 text-red-600 hover:text-red-700 shadow-lg"
+                  disabled={deleteProductMutation.isLoading}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {/* Product Name */}
-                  <h3 className="font-semibold text-secondary-900 line-clamp-2">
-                    {product.name}
-                  </h3>
+              
+              {/* Admin Status Badge */}
+              <div className="absolute top-3 left-3 z-30">
+                {(() => {
+                  // Calculate total available quantity from variants
+                  const totalVariantQuantity = product.variants?.reduce((total, variant) => total + (variant.quantity || 0), 0) || 0;
+                  const displayQuantity = product.variants && product.variants.length > 0 ? totalVariantQuantity : product.quantity;
                   
-                  {/* Description */}
-                  <p className="text-sm text-secondary-600 line-clamp-2">
-                    {product.description}
-                  </p>
-
-                  {/* Price */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary-600">
-                      {formatCurrency(product.price)}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        product.isActive
-                          ? 'bg-success-100 text-success-800'
-                          : 'bg-error-100 text-error-800'
-                      }`}
-                    >
-                      {product.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-
-                  {/* Inventory Details */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-secondary-600">Stock:</span>
-                      <span className={`font-medium ${
-                        product.quantity === 0 ? 'text-error-600' :
-                        product.quantity <= 5 ? 'text-yellow-600' :
-                        'text-success-600'
-                      }`}>
-                        {product.quantity} units
+                  if (product.status === 'sold_out' || displayQuantity === 0) {
+                    return (
+                      <span className="text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-gray-500 text-white">
+                        Sold Out
                       </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-secondary-600">Status:</span>
-                      <span className={`font-medium ${
-                        product.status === 'sold_out' ? 'text-error-600' : 'text-success-600'
-                      }`}>
-                        {product.status === 'sold_out' ? 'Sold Out' : 'Available'}
+                    );
+                  } else if (displayQuantity <= 5) {
+                    return (
+                      <span className="text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-yellow-500 text-white">
+                        Low Stock
                       </span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/admin/products/${product.id}/edit`)}
-                      className="flex-1"
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteProduct(product.id, product.name)}
-                      className="text-error-600 hover:text-error-700"
-                      disabled={deleteProductMutation.isLoading}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                    );
+                  } else {
+                    return (
+                      <span className="text-xs px-2 py-1 rounded-full backdrop-blur-sm bg-green-500 text-white">
+                        In Stock
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            </div>
           ))}
         </div>
       ) : (

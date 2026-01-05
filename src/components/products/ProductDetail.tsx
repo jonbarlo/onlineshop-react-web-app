@@ -28,7 +28,36 @@ export const ProductDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product, quantity);
+      // Check if product has variants and variant is selected
+      if (product.variants && product.variants.length > 0) {
+        if (!selectedVariant) {
+          alert(t('admin.please_select_color_size'));
+          return;
+        }
+        
+        // Check if selected variant is out of stock
+        if (selectedVariant.quantity === 0) {
+          alert(t('admin.variant_out_of_stock'));
+          return;
+        }
+        
+        if (selectedVariant.quantity < quantity) {
+          alert(t('admin.only_items_available', { count: selectedVariant.quantity }));
+          return;
+        }
+      } else {
+        // For products without variants, check overall stock
+        if (product.quantity === 0) {
+          alert(t('admin.out_of_stock'));
+          return;
+        }
+        if (product.quantity < quantity) {
+          alert(t('admin.only_items_available', { count: product.quantity }));
+          return;
+        }
+      }
+      
+      addToCart(product, quantity, selectedVariant);
       setQuantity(1);
     }
   };
@@ -173,14 +202,21 @@ export const ProductDetail: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setQuantity(quantity + 1)}
-                  disabled={product.status === 'sold_out' || (product.status === 'available' && quantity >= product.quantity)}
+                  disabled={
+                    product.status === 'sold_out' || 
+                    (product.variants && product.variants.length > 0 && selectedVariant && quantity >= selectedVariant.quantity) ||
+                    (!product.variants || product.variants.length === 0) && quantity >= product.quantity
+                  }
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              {product.status === 'available' && product.quantity < 10 && (
+              {product.status === 'available' && (
                 <span className="text-xs text-orange-600">
-                  Max: {product.quantity}
+                  Max: {product.variants && product.variants.length > 0 && selectedVariant 
+                    ? selectedVariant.quantity 
+                    : product.quantity
+                  }
                 </span>
               )}
             </div>
@@ -212,16 +248,27 @@ export const ProductDetail: React.FC = () => {
             <div className="flex space-x-4">
               <Button
                 onClick={handleAddToCart}
-                disabled={product.status === 'sold_out' || product.quantity === 0}
+                disabled={
+                  product.status === 'sold_out' || 
+                  product.quantity === 0 ||
+                  (product.variants && product.variants.length > 0 && (!selectedVariant || selectedVariant.quantity === 0))
+                }
                 className={`flex-1 transition-all duration-200 ${
-                  product.status === 'sold_out' 
+                  product.status === 'sold_out' || 
+                  product.quantity === 0 ||
+                  (product.variants && product.variants.length > 0 && (!selectedVariant || selectedVariant.quantity === 0))
                     ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600' 
                     : ''
                 }`}
                 size="lg"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {product.status === 'sold_out' ? 'Notify When Available' : 'Add to Cart'}
+                {product.status === 'sold_out' || product.quantity === 0
+                  ? t('admin.sold_out')
+                  : (product.variants && product.variants.length > 0 && (!selectedVariant || selectedVariant.quantity === 0))
+                    ? t('admin.select_available_options')
+                    : t('buttons.add_to_cart')
+                }
               </Button>
             </div>
 

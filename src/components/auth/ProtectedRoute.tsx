@@ -7,10 +7,16 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, user, token } = useAuthContext();
+  const { isAuthenticated, user, token, isLoading } = useAuthContext();
   const location = useLocation();
 
-  console.log('ProtectedRoute rendered with:', { isAuthenticated, user: !!user, token: !!token, location: location.pathname });
+  console.log('ProtectedRoute rendered with:', { isAuthenticated, user: !!user, token: !!token, isLoading, location: location.pathname });
+
+  // Wait for auth state to load before making decisions
+  if (isLoading) {
+    console.log('Auth still loading, waiting...');
+    return <div>Loading...</div>;
+  }
 
   if (!isAuthenticated) {
     console.log('User not authenticated, redirecting to login');
